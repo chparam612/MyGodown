@@ -450,9 +450,9 @@ describe('Module 1: Auth & User Management (UC-01 to UC-06)', () => {
   });
 
   // --------------------------------------------------------------------------
-  // Admin Reset User Password (UC-P02)
+  // UC-P02: Reset User Password (Admin)
   // --------------------------------------------------------------------------
-  describe('Admin Reset User Password (UC-P02)', () => {
+  describe('UC-P02: Reset User Password (Admin)', () => {
     test('Admin can reset another user password (200 OK)', async () => {
       const res = await request(app)
         .post('/api/users/3/reset-password')

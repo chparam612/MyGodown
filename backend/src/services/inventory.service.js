@@ -338,7 +338,108 @@ export class InventoryService {
       };
     });
   }
+
+  /**
+   * UC-27: Adds stock from a purchase order receipt into the target warehouse.
+   * MUST be executed inside an active ACID transaction connection provided by the caller.
+   * Locks the product's warehouse stock row FOR UPDATE, increments quantity, and records an immutable 'in' movement.
+   *
+   * @param {import('mysql2/promise').PoolConnection} conn - Active transaction connection
+   * @param {{ productId: number, warehouseId: number, quantity: number, userId: number, poId: number, poNumber: string }} params
+   * @returns {Promise<{ movementId: number, productId: number, warehouseId: number, previousStock: number, newStock: number, quantity: number }>}
+   */
+  async addStockFromPurchaseOrder(conn, { productId, warehouseId, quantity, userId, poId, poNumber }) {
+    const qty = parseInt(quantity, 10);
+    if (isNaN(qty) || qty <= 0) {
+      throw new ValidationError('Movement quantity must be a positive integer');
+    }
+
+    // 1. Lock stock level FOR UPDATE
+    const currentStockRow = await inventoryRepository.lockStockLevelForUpdate(conn, productId, warehouseId);
+    const currentStock = currentStockRow ? currentStockRow.quantity : 0;
+    const newStock = currentStock + qty;
+
+    // 2. Upsert stock level with new increased balance
+    await inventoryRepository.upsertStockLevel(conn, productId, warehouseId, newStock);
+
+    // 3. Record immutable stock movement ledger entry
+    const movementId = await inventoryRepository.insertStockMovement(conn, {
+      productId,
+      warehouseId,
+      userId,
+      movementType: 'in',
+      referenceType: 'purchase_order',
+      referenceId: poId,
+      quantity: qty,
+      reference: `PO Receipt: ${poNumber}`,
+    });
+
+    return {
+      movementId,
+      productId,
+      warehouseId,
+      previousStock: currentStock,
+      newStock,
+      quantity: qty,
+    };
+  }
+
+  /**
+   * UC-30 / UC-28: Deducts stock for a sales order fulfillment from the target warehouse.
+   * MUST be executed inside an active ACID transaction connection provided by the caller.
+   * Locks the product's warehouse stock row FOR UPDATE, asserts available stock >= quantity,
+   * decrements quantity, and records an immutable 'out' movement.
+   * Throws InsufficientStockError (422) if currentStock < quantity.
+   *
+   * @param {import('mysql2/promise').PoolConnection} conn - Active transaction connection
+   * @param {{ productId: number, warehouseId: number, quantity: number, userId: number, soId: number, soNumber: string }} params
+   * @returns {Promise<{ movementId: number, productId: number, warehouseId: number, previousStock: number, newStock: number, quantity: number }>}
+   */
+  async deductStockForSalesOrder(conn, { productId, warehouseId, quantity, userId, soId, soNumber }) {
+    const qty = parseInt(quantity, 10);
+    if (isNaN(qty) || qty <= 0) {
+      throw new ValidationError('Movement quantity must be a positive integer');
+    }
+
+    // 1. Lock stock level FOR UPDATE
+    const currentStockRow = await inventoryRepository.lockStockLevelForUpdate(conn, productId, warehouseId);
+    const currentStock = currentStockRow ? currentStockRow.quantity : 0;
+
+    // 2. Insufficient stock guard
+    if (currentStock < qty) {
+      throw new InsufficientStockError(
+        `Insufficient stock for product ID ${productId} in warehouse ID ${warehouseId}. Required: ${qty}, Available: ${currentStock}`
+      );
+    }
+
+    const newStock = currentStock - qty;
+
+    // 3. Upsert stock level with decreased balance
+    await inventoryRepository.upsertStockLevel(conn, productId, warehouseId, newStock);
+
+    // 4. Record immutable stock movement ledger entry
+    const movementId = await inventoryRepository.insertStockMovement(conn, {
+      productId,
+      warehouseId,
+      userId,
+      movementType: 'out',
+      referenceType: 'sales_order',
+      referenceId: soId,
+      quantity: qty,
+      reference: `SO Fulfilment: ${soNumber}`,
+    });
+
+    return {
+      movementId,
+      productId,
+      warehouseId,
+      previousStock: currentStock,
+      newStock,
+      quantity: qty,
+    };
+  }
 }
 
 export const inventoryService = new InventoryService();
 export default inventoryService;
+

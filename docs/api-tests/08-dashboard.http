@@ -1,0 +1,102 @@
+### ============================================================================
+### File: docs/api-tests/08-dashboard.http
+### Purpose: Manual and automated HTTP requests for Module 8 (Dashboard: UC-32)
+### Compatible with: VS Code REST Client, Thunder Client, and IntelliJ HTTP Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+@adminEmail = admin@mygodown.com
+@adminPassword = AdminPassword123!
+@managerEmail = manager@mygodown.com
+@managerPassword = ManagerPassword123!
+@staffEmail = staff@mygodown.com
+@staffPassword = StaffPassword123!
+
+### ----------------------------------------------------------------------------
+### 1. Authenticate as Administrator
+### ----------------------------------------------------------------------------
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Store admin token
+@adminToken = {{adminLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 2. Authenticate as Warehouse Manager
+### ----------------------------------------------------------------------------
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{managerPassword}}"
+}
+
+### Store manager token
+@managerToken = {{managerLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 3. Authenticate as Staff
+### ----------------------------------------------------------------------------
+# @name staffLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{staffEmail}}",
+  "password": "{{staffPassword}}"
+}
+
+### Store staff token
+@staffToken = {{staffLogin.response.body.data.token}}
+
+### ============================================================================
+### UC-32: View Dashboard Summary
+### ============================================================================
+
+### ----------------------------------------------------------------------------
+### 4. Admin views dashboard summary (Returns all metrics including stockValue)
+### Expected: 200 OK with totalActiveProducts, totalStockUnits, stockValue,
+###           lowStockCount, openPurchaseOrders, openSalesOrders,
+###           stockByWarehouse, and recentMovements.
+### ----------------------------------------------------------------------------
+# @name getDashboardSummaryAdmin
+GET {{baseUrl}}/dashboard/summary
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 5. Warehouse Manager views dashboard summary (Returns all metrics with stockValue)
+### Expected: 200 OK with stockValue present
+### ----------------------------------------------------------------------------
+# @name getDashboardSummaryManager
+GET {{baseUrl}}/dashboard/summary
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 6. Staff views dashboard summary (BR-05: stockValue STRICTLY OMITTED)
+### Expected: 200 OK with operational metrics, but stockValue key does NOT exist
+### ----------------------------------------------------------------------------
+# @name getDashboardSummaryStaff
+GET {{baseUrl}}/dashboard/summary
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 7. Unauthenticated request to dashboard summary
+### Expected: 401 Unauthorized with standard error envelope
+### ----------------------------------------------------------------------------
+# @name getDashboardSummaryUnauth
+GET {{baseUrl}}/dashboard/summary
+Accept: application/json

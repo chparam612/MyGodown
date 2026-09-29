@@ -23,6 +23,9 @@ import productRoutes from './routes/product.routes.js';
 import warehouseRoutes from './routes/warehouse.routes.js';
 import inventoryRoutes from './routes/inventory.routes.js';
 import supplierRoutes from './routes/supplier.routes.js';
+import purchaseOrderRoutes from './routes/purchaseOrder.routes.js';
+import salesOrderRoutes from './routes/salesOrder.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 
 const app = express();
 
@@ -51,6 +54,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/warehouses', warehouseRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/suppliers', supplierRoutes);
+app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api/sales-orders', salesOrderRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Fallback 404 handler for undefined routes
 app.use(notFoundHandler);

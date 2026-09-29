@@ -57,12 +57,17 @@ This document records deliberate design decisions, deviations from initial defau
 
 ---
 
-## 4. Dashboard & Reports (Module 7 Design Decisions)
+## 4. Dashboard & Reports (Module 8 Design Decisions)
 
 ### 4.1 Dashboard Stock Value Visibility Restricted (BR-05 Extension)
 - **Decision:**
   - Staff must **NOT** see the dashboard stock valuation figure (`stockValue`), which is derived from product cost prices ($\sum \text{quantity} \times \text{cost\_price}$).
   - In the Dashboard module (`GET /api/dashboard/summary`), `stockValue` will be returned only for users with the `admin` and `manager` roles, and omitted completely from the response for `staff`.
+
+### 4.2 Dashboard Low-Stock Count Rule (Location-Based vs Catalog-Based)
+- **Behavior:**
+  - `lowStockCount` in `GET /api/dashboard/summary` is computed as the number of distinct `(product_id, warehouse_id)` inventory locations where `stock_levels.quantity <= products.reorder_level` (for active products in active warehouses).
+  - Rationale: Inventory replenishment and reorder operations are managed per facility. A product adequately stocked at Warehouse A but below reorder level at Warehouse B requires replenishment action at Warehouse B.
 
 ---
 
@@ -108,3 +113,17 @@ This document records deliberate design decisions, deviations from initial defau
 - **Behavior:**
   - **Supplier Name:** Supplier names are **not** unique. Multiple distinct suppliers are permitted to share the same name (e.g. different regional operating entities or independent branches).
   - **Supplier Email:** Supplier email uniqueness is enforced strictly via **application-level pre-checks** in `src/services/supplier.service.js` (returning HTTP 409 Conflict if a duplicate email is provided upon create or update). There is no database-level UNIQUE constraint on `email` in `inventory_db`.
+
+---
+
+## 8. Purchase Order Management (Module 6)
+
+### 8.1 Duplicate Line Item Consolidation
+- **Behavior:**
+  - If a purchase order creation (`POST /api/purchase-orders`) or draft update (`PUT /api/purchase-orders/:id`) request contains duplicate line items for the same `productId`, the server merges them into a single consolidated line item (summing quantities and retaining the last non-null unit cost provided) rather than rejecting the request.
+
+### 8.2 Default Unit Cost Snapshotting Risk
+- **Behavior & Known Risk:**
+  - When `unitCost` is omitted from a line item at creation, the system automatically defaults `unitCost` to the product's current catalog `costPrice`.
+  - **Known Risk:** If the product's catalog `costPrice` is modified later, PO history will not reflect the actual agreed supplier procurement price unless `unitCost` was explicitly provided in the request payload.
+

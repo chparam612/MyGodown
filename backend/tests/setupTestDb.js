@@ -21,7 +21,10 @@ const __dirname = path.dirname(__filename);
 const backendDir = path.resolve(__dirname, '..');
 const repoDir = path.resolve(__dirname, '../..');
 
-dotenv.config({ path: path.join(backendDir, '.env') });
+// Ensure .env is loaded once (if not already loaded by db.js)
+if (!process.env.DB_NAME && !process.env.DB_TEST_NAME) {
+  dotenv.config({ path: path.join(backendDir, '.env'), quiet: true });
+}
 
 const testDbName = process.env.DB_TEST_NAME || 'inventory_test_db';
 const prodDbName = process.env.DB_NAME || 'inventory_db';

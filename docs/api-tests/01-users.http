@@ -88,7 +88,7 @@ GET {{baseUrl}}/auth/me
 Accept: application/json
 
 ### ----------------------------------------------------------------------------
-### 7. [UC-P01] Change Own Password (Happy Path)
+### 7. [UC-03] Change Own Password (Happy Path)
 ### Expect: 200 OK, success message
 ### ----------------------------------------------------------------------------
 # @name changePassword
@@ -115,7 +115,7 @@ Accept: application/json
 }
 
 ### ----------------------------------------------------------------------------
-### 8. [UC-03] Create User (Admin Only - Happy Path)
+### 8. [UC-04] Create User (Admin Only - Happy Path)
 ### Expect: 201 Created, returns created user object without password
 ### ----------------------------------------------------------------------------
 # @name createUser
@@ -132,7 +132,7 @@ Accept: application/json
 }
 
 ### ----------------------------------------------------------------------------
-### 9. [UC-03] Create User - Duplicate Email Conflict
+### 9. [UC-04] Create User - Duplicate Email Conflict
 ### Expect: 409 Conflict, CONFLICT code
 ### ----------------------------------------------------------------------------
 # @name createUserDuplicateEmail
@@ -164,7 +164,7 @@ Accept: application/json
 @managerToken = {{managerLogin.response.body.data.token}}
 
 ### ----------------------------------------------------------------------------
-### 11. [UC-03] Create User - Forbidden (Manager Trying to Create User)
+### 11. [UC-04] Create User - Forbidden (Manager Trying to Create User)
 ### Expect: 403 Forbidden, FORBIDDEN code
 ### ----------------------------------------------------------------------------
 # @name createUserForbidden
@@ -181,7 +181,7 @@ Accept: application/json
 }
 
 ### ----------------------------------------------------------------------------
-### 12. [UC-04] List Users (Admin Access - Happy Path)
+### 12. [UC-05] List Users (Admin Access - Happy Path)
 ### Expect: 200 OK, paginated list of users and meta
 ### ----------------------------------------------------------------------------
 # @name listUsers
@@ -190,7 +190,7 @@ Authorization: Bearer {{adminToken}}
 Accept: application/json
 
 ### ----------------------------------------------------------------------------
-### 13. [UC-04] List Users - Forbidden for Manager (Admin Only Route)
+### 13. [UC-05] List Users - Forbidden for Manager (Admin Only Route)
 ### Expect: 403 Forbidden, FORBIDDEN code
 ### ----------------------------------------------------------------------------
 # @name listUsersManagerForbidden
@@ -199,7 +199,7 @@ Authorization: Bearer {{managerToken}}
 Accept: application/json
 
 ### ----------------------------------------------------------------------------
-### 14. [UC-04] Get User by ID (Admin Access)
+### 14. [UC-05] Get User by ID (Admin Access)
 ### Expect: 200 OK, user details
 ### ----------------------------------------------------------------------------
 # @name getUserById
@@ -208,7 +208,7 @@ Authorization: Bearer {{adminToken}}
 Accept: application/json
 
 ### ----------------------------------------------------------------------------
-### 15. [UC-04] Get User by ID - Forbidden for Manager
+### 15. [UC-05] Get User by ID - Forbidden for Manager
 ### Expect: 403 Forbidden, FORBIDDEN code
 ### ----------------------------------------------------------------------------
 # @name getUserByIdManagerForbidden
@@ -217,7 +217,7 @@ Authorization: Bearer {{managerToken}}
 Accept: application/json
 
 ### ----------------------------------------------------------------------------
-### 16. [UC-04] Get User by ID - 404 Unknown User
+### 16. [UC-05] Get User by ID - 404 Unknown User
 ### Expect: 404 Not Found, NOT_FOUND code
 ### ----------------------------------------------------------------------------
 # @name getUserByIdNotFound
@@ -226,7 +226,7 @@ Authorization: Bearer {{adminToken}}
 Accept: application/json
 
 ### ----------------------------------------------------------------------------
-### 17. [UC-05] Update User (Admin Only - Happy Path)
+### 17. [UC-06] Update User (Admin Only - Happy Path)
 ### Expect: 200 OK, updated user details
 ### ----------------------------------------------------------------------------
 # @name updateUser
@@ -242,7 +242,7 @@ Accept: application/json
 }
 
 ### ----------------------------------------------------------------------------
-### 18. [UC-05] Reactivate User (Admin Setting isActive: true)
+### 18. [UC-06] Reactivate User (Admin Setting isActive: true)
 ### Expect: 200 OK, user marked with isActive = true
 ### ----------------------------------------------------------------------------
 # @name reactivateUser
@@ -256,7 +256,7 @@ Accept: application/json
 }
 
 ### ----------------------------------------------------------------------------
-### 19. [UC-05] Admin Self-Deactivation Block
+### 19. [UC-06] Admin Self-Deactivation Block
 ### Expect: 403 Forbidden ("Administrators cannot deactivate their own account")
 ### ----------------------------------------------------------------------------
 # @name selfDeactivationBlock
@@ -270,7 +270,7 @@ Accept: application/json
 }
 
 ### ----------------------------------------------------------------------------
-### 20. [UC-05] Admin Self-Demotion Block
+### 20. [UC-06] Admin Self-Demotion Block
 ### Expect: 403 Forbidden ("Administrators cannot demote their own role")
 ### ----------------------------------------------------------------------------
 # @name selfDemotionBlock

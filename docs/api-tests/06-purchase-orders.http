@@ -1,0 +1,344 @@
+### ============================================================================
+### File: docs/api-tests/06-purchase-orders.http
+### Purpose: Manual and automated HTTP requests for Module 6 (Purchase Orders: UC-25 to UC-27)
+### Compatible with: VS Code REST Client, Thunder Client, and IntelliJ HTTP Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+@adminEmail = admin@mygodown.com
+@adminPassword = AdminPassword123!
+@managerEmail = manager@mygodown.com
+@managerPassword = ManagerPassword123!
+@staffEmail = staff@mygodown.com
+@staffPassword = StaffPassword123!
+
+### ----------------------------------------------------------------------------
+### 1. Authenticate as Administrator
+### ----------------------------------------------------------------------------
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Store admin token
+@adminToken = {{adminLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 2. Authenticate as Warehouse Manager
+### ----------------------------------------------------------------------------
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{managerPassword}}"
+}
+
+### Store manager token
+@managerToken = {{managerLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 3. Authenticate as Staff
+### ----------------------------------------------------------------------------
+# @name staffLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{staffEmail}}",
+  "password": "{{staffPassword}}"
+}
+
+### Store staff token
+@staffToken = {{staffLogin.response.body.data.token}}
+
+### ============================================================================
+### UC-25: Create Purchase Order
+### ============================================================================
+
+### 4. Create Draft Purchase Order (Warehouse Manager - 201 Created)
+# @name createDraftPO
+POST {{baseUrl}}/purchase-orders
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 1,
+  "warehouseId": 1,
+  "notes": "Automated procurement run for Q4 replenishment",
+  "items": [
+    { "productId": 1, "quantity": 10, "unitCost": 15.50 },
+    { "productId": 2, "quantity": 5, "unitCost": 20.00 }
+  ]
+}
+
+### Store created PO ID
+@draftPoId = {{createDraftPO.response.body.data.id}}
+
+### 5. Create Directly as Ordered (Administrator - 201 Created)
+# @name createOrderedPO
+POST {{baseUrl}}/purchase-orders
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 2,
+  "warehouseId": 2,
+  "status": "ordered",
+  "notes": "Urgent stock replenishment order",
+  "items": [
+    { "productId": 3, "quantity": 12, "unitCost": 14.00 }
+  ]
+}
+
+### Store ordered PO ID
+@orderedPoId = {{createOrderedPO.response.body.data.id}}
+
+### 6. Validation Failure: Empty Line Items (400 Bad Request)
+POST {{baseUrl}}/purchase-orders
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 1,
+  "warehouseId": 1,
+  "items": []
+}
+
+### 7. Validation Failure: Non-positive Quantity (400 Bad Request)
+POST {{baseUrl}}/purchase-orders
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 1,
+  "warehouseId": 1,
+  "items": [
+    { "productId": 1, "quantity": 0 }
+  ]
+}
+
+### 8. Validation Failure: Negative Unit Cost (400 Bad Request)
+POST {{baseUrl}}/purchase-orders
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 1,
+  "warehouseId": 1,
+  "items": [
+    { "productId": 1, "quantity": 5, "unitCost": -10.00 }
+  ]
+}
+
+### 9. Validation Failure: Unknown Supplier (404 Not Found)
+POST {{baseUrl}}/purchase-orders
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 999999,
+  "warehouseId": 1,
+  "items": [
+    { "productId": 1, "quantity": 5 }
+  ]
+}
+
+### 10. Authorization Failure: Staff Denied PO Creation (403 Forbidden)
+POST {{baseUrl}}/purchase-orders
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 1,
+  "warehouseId": 1,
+  "items": [
+    { "productId": 1, "quantity": 5 }
+  ]
+}
+
+### ============================================================================
+### UC-26: View Purchase Orders
+### ============================================================================
+
+### 11. List Purchase Orders with Pagination (Manager - 200 OK)
+GET {{baseUrl}}/purchase-orders?page=1&limit=10
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 12. Filter Purchase Orders by Status (Manager - 200 OK)
+GET {{baseUrl}}/purchase-orders?status=ordered
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 13. Filter Purchase Orders by Warehouse (Manager - 200 OK)
+GET {{baseUrl}}/purchase-orders?warehouseId=1
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 14. Get Purchase Order Details by ID (Manager - 200 OK)
+GET {{baseUrl}}/purchase-orders/{{draftPoId}}
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 15. Get Non-Existent Purchase Order (404 Not Found)
+GET {{baseUrl}}/purchase-orders/999999
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 16. Authorization Failure: Staff Denied PO View (403 Forbidden)
+GET {{baseUrl}}/purchase-orders
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ============================================================================
+### UC-P08: Edit Draft Purchase Order
+### ============================================================================
+
+### 17. Edit Draft Purchase Order (Manager - 200 OK)
+### Allows changing supplier, warehouse, notes, and items with duplicate merge & total recalculation
+PUT {{baseUrl}}/purchase-orders/{{draftPoId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 2,
+  "warehouseId": 2,
+  "notes": "Updated Q4 replenishment order before ordering",
+  "items": [
+    { "productId": 2, "quantity": 8, "unitCost": 18.00 },
+    { "productId": 2, "quantity": 2, "unitCost": 18.00 },
+    { "productId": 3, "quantity": 5, "unitCost": 14.00 }
+  ]
+}
+
+### 18. Authorization Failure: Staff Denied Editing PO (403 Forbidden)
+PUT {{baseUrl}}/purchase-orders/{{draftPoId}}
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 2,
+  "warehouseId": 2,
+  "items": [{ "productId": 1, "quantity": 1 }]
+}
+
+### ============================================================================
+### State Machine & Transitions
+### ============================================================================
+
+
+### 17. Transition Draft PO to Ordered (200 OK)
+PATCH {{baseUrl}}/purchase-orders/{{draftPoId}}/status
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "ordered"
+}
+
+### 18. Illegal Transition: Ordered to Draft (409 Conflict)
+PATCH {{baseUrl}}/purchase-orders/{{draftPoId}}/status
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "ordered"
+}
+
+### 19. Cancel an Ordered Purchase Order (200 OK)
+# @name createPoToCancel
+POST {{baseUrl}}/purchase-orders
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "supplierId": 1,
+  "warehouseId": 1,
+  "status": "ordered",
+  "items": [
+    { "productId": 1, "quantity": 2 }
+  ]
+}
+
+@cancelPoId = {{createPoToCancel.response.body.data.id}}
+
+### Execute cancellation
+POST {{baseUrl}}/purchase-orders/{{cancelPoId}}/cancel
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 20. Illegal Transition: Cancelled PO to Ordered (409 Conflict)
+PATCH {{baseUrl}}/purchase-orders/{{cancelPoId}}/status
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "ordered"
+}
+
+### ============================================================================
+### UC-27: Receive Purchase Order & Double-Receive Guard (CRITICAL)
+### ============================================================================
+
+### 21. Happy Path: Receive Ordered Purchase Order (200 OK)
+### Increases warehouse stock and inserts immutable 'in' movement ledger record
+POST {{baseUrl}}/purchase-orders/{{orderedPoId}}/receive
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 22. DOUBLE-RECEIVE GUARD: Attempt to receive already-received PO (409 Conflict)
+### MUST fail with 409 and MUST NOT increase stock again
+POST {{baseUrl}}/purchase-orders/{{orderedPoId}}/receive
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 23. Illegal Receive: Attempt to receive a cancelled PO (409 Conflict)
+POST {{baseUrl}}/purchase-orders/{{cancelPoId}}/receive
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 24. Illegal Cancel: Attempt to cancel an already received PO (409 Conflict)
+POST {{baseUrl}}/purchase-orders/{{orderedPoId}}/cancel
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ============================================================================
+### Authentication & Role Boundaries
+### ============================================================================
+
+### 25. Unauthenticated Request Rejection (401 Unauthorized)
+POST {{baseUrl}}/purchase-orders
+Content-Type: application/json
+
+{
+  "supplierId": 1,
+  "warehouseId": 1,
+  "items": [{ "productId": 1, "quantity": 1 }]
+}
+
+### 26. Staff Denied Receiving (403 Forbidden)
+POST {{baseUrl}}/purchase-orders/{{orderedPoId}}/receive
+Authorization: Bearer {{staffToken}}
+Accept: application/json

@@ -16,7 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Ensure .env is loaded
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 
 const isTest = process.env.NODE_ENV === 'test';
 const targetDatabase = isTest

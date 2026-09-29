@@ -1,0 +1,290 @@
+### ============================================================================
+### File: docs/api-tests/07-sales-orders.http
+### Purpose: Manual and automated HTTP requests for Module 7 (Sales Orders: UC-28 to UC-30)
+### Compatible with: VS Code REST Client, Thunder Client, and IntelliJ HTTP Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+@adminEmail = admin@mygodown.com
+@adminPassword = AdminPassword123!
+@managerEmail = manager@mygodown.com
+@managerPassword = ManagerPassword123!
+@staffEmail = staff@mygodown.com
+@staffPassword = StaffPassword123!
+
+### ----------------------------------------------------------------------------
+### 1. Authenticate as Administrator
+### ----------------------------------------------------------------------------
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Store admin token
+@adminToken = {{adminLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 2. Authenticate as Warehouse Manager
+### ----------------------------------------------------------------------------
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{managerPassword}}"
+}
+
+### Store manager token
+@managerToken = {{managerLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 3. Authenticate as Staff
+### ----------------------------------------------------------------------------
+# @name staffLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{staffEmail}}",
+  "password": "{{staffPassword}}"
+}
+
+### Store staff token
+@staffToken = {{staffLogin.response.body.data.token}}
+
+### ============================================================================
+### UC-28: Create Sales Order
+### ============================================================================
+
+### 4. Create Draft Sales Order (Staff - 201 Created)
+# @name createDraftSOStaff
+POST {{baseUrl}}/sales-orders
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerName": "Global Retail Partners",
+  "warehouseId": 1,
+  "notes": "Urgent order for weekend delivery",
+  "items": [
+    { "productId": 1, "quantity": 5, "unitPrice": 45.00 },
+    { "productId": 2, "quantity": 3, "unitPrice": 60.00 }
+  ]
+}
+
+### Store created SO ID
+@draftSoId = {{createDraftSOStaff.response.body.data.id}}
+
+### 5. Create Draft Sales Order with Default Unit Price Snapshot (Manager - 201 Created)
+# @name createSODefaultPrice
+POST {{baseUrl}}/sales-orders
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerName": "Apex Retail Co",
+  "warehouseId": 1,
+  "items": [
+    { "productId": 1, "quantity": 2 }
+  ]
+}
+
+### Store second SO ID
+@priceSnapshotSoId = {{createSODefaultPrice.response.body.data.id}}
+
+### 6. Create Sales Order with Duplicate Product Consolidation (Admin - 201 Created)
+# @name createSODuplicateMerge
+POST {{baseUrl}}/sales-orders
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerName": "Consolidated Supplies Ltd",
+  "warehouseId": 1,
+  "items": [
+    { "productId": 1, "quantity": 4, "unitPrice": 40.00 },
+    { "productId": 1, "quantity": 6, "unitPrice": 40.00 }
+  ]
+}
+
+### 7. Rejection 400: Missing Line Items Array
+# @name createSOEmptyItems
+POST {{baseUrl}}/sales-orders
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerName": "Invalid Order",
+  "warehouseId": 1,
+  "items": []
+}
+
+### 8. Rejection 400: Line Item Quantity Zero
+# @name createSOZeroQty
+POST {{baseUrl}}/sales-orders
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerName": "Zero Quantity Corp",
+  "warehouseId": 1,
+  "items": [
+    { "productId": 1, "quantity": 0, "unitPrice": 25.00 }
+  ]
+}
+
+### 9. Rejection 400: Negative Unit Price
+# @name createSONegPrice
+POST {{baseUrl}}/sales-orders
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerName": "Negative Price Inc",
+  "warehouseId": 1,
+  "items": [
+    { "productId": 1, "quantity": 2, "unitPrice": -15.00 }
+  ]
+}
+
+### 10. Rejection 404: Unknown Warehouse ID
+# @name createSOUnknownWarehouse
+POST {{baseUrl}}/sales-orders
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerName": "Ghost Warehouse Corp",
+  "warehouseId": 999999,
+  "items": [
+    { "productId": 1, "quantity": 2, "unitPrice": 25.00 }
+  ]
+}
+
+### ============================================================================
+### UC-29: View Sales Orders
+### ============================================================================
+
+### 11. List Sales Orders with Pagination (Staff - 200 OK)
+# @name listSOsStaff
+GET {{baseUrl}}/sales-orders?page=1&limit=10
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 12. Filter Sales Orders by Status (Manager - 200 OK)
+# @name filterSOsByStatus
+GET {{baseUrl}}/sales-orders?status=draft
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 13. Filter Sales Orders by Warehouse (Admin - 200 OK)
+# @name filterSOsByWarehouse
+GET {{baseUrl}}/sales-orders?warehouseId=1
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### 14. View Single Sales Order by ID (Staff - 200 OK)
+# @name getSOById
+GET {{baseUrl}}/sales-orders/{{draftSoId}}
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 15. View Non-Existent Sales Order (Staff - 404 Not Found)
+# @name getSONotFound
+GET {{baseUrl}}/sales-orders/999999
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ============================================================================
+### State Machine & Transitions (UC-30)
+### ============================================================================
+
+### 16. Transition Draft SO to Confirmed (Staff - 200 OK)
+# @name confirmSO
+PATCH {{baseUrl}}/sales-orders/{{draftSoId}}/status
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "confirmed"
+}
+
+### 17. Illegal Transition: Double Confirm Returns 409 Conflict
+# @name doubleConfirmConflict
+PATCH {{baseUrl}}/sales-orders/{{draftSoId}}/status
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "confirmed"
+}
+
+### 18. Fulfill Draft (Never-Confirmed) SO Returns 409 Conflict
+# @name fulfillDraftConflict
+POST {{baseUrl}}/sales-orders/{{priceSnapshotSoId}}/fulfill
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ============================================================================
+### UC-30: Fulfill Sales Order & Double-Fulfillment Guard
+### ============================================================================
+
+### 19. Fulfill Confirmed Sales Order (Staff - 200 OK)
+# @name fulfillSOHappyPath
+POST {{baseUrl}}/sales-orders/{{draftSoId}}/fulfill
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 20. DOUBLE-FULFILLMENT GUARD: Second Fulfill Attempt Returns 409 Conflict
+# @name doubleFulfillGuard
+POST {{baseUrl}}/sales-orders/{{draftSoId}}/fulfill
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 21. Attempt Cancellation on Fulfilled Sales Order Returns 409 Conflict
+# @name cancelFulfilledSOConflict
+POST {{baseUrl}}/sales-orders/{{draftSoId}}/cancel
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ============================================================================
+### Cancellation (Admin & Manager)
+### ============================================================================
+
+### 22. Cancel Draft Sales Order (Manager - 200 OK)
+# @name cancelDraftSO
+POST {{baseUrl}}/sales-orders/{{priceSnapshotSoId}}/cancel
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ============================================================================
+### RBAC & Security Boundaries
+### ============================================================================
+
+### 23. Staff Role Denied Cancelling Sales Order (403 Forbidden)
+# @name staffCancelForbidden
+POST {{baseUrl}}/sales-orders/{{draftSoId}}/cancel
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 24. Unauthenticated Request Denied (401 Unauthorized)
+# @name unauthenticatedRequest
+GET {{baseUrl}}/sales-orders
+Accept: application/json
