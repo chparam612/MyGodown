@@ -1,0 +1,297 @@
+### ============================================================================
+### File: docs/api-tests/03-warehouses.http
+### Purpose: Manual and automated HTTP requests for Module 3 (Warehouses: UC-11 to UC-13)
+### Compatible with: VS Code REST Client, Thunder Client, and IntelliJ HTTP Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+@adminEmail = admin@mygodown.com
+@adminPassword = AdminPassword123!
+@managerEmail = manager@mygodown.com
+@managerPassword = ManagerPassword123!
+@staffEmail = staff@mygodown.com
+@staffPassword = StaffPassword123!
+
+### ----------------------------------------------------------------------------
+### 1. Authenticate as Administrator
+### ----------------------------------------------------------------------------
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Store token
+@adminToken = {{adminLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 2. Authenticate as Warehouse Manager
+### ----------------------------------------------------------------------------
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{managerPassword}}"
+}
+
+### Store token
+@managerToken = {{managerLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 3. Authenticate as Staff
+### ----------------------------------------------------------------------------
+# @name staffLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{staffEmail}}",
+  "password": "{{staffPassword}}"
+}
+
+### Store token
+@staffToken = {{staffLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 4. [UC-11] Create Warehouse (Admin Only - Happy Path)
+### Expect: 201 Created, warehouse details in camelCase
+### ----------------------------------------------------------------------------
+# @name createWarehouse
+POST {{baseUrl}}/warehouses
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Midwest Distribution Center",
+  "code": "WH-MIDWEST",
+  "city": "Kansas City",
+  "address": "1200 Logistics Parkway",
+  "isActive": true
+}
+
+### Store created warehouse ID
+@createdWarehouseId = {{createWarehouse.response.body.data.id}}
+
+### ----------------------------------------------------------------------------
+### 5. [UC-11] Create Warehouse - Duplicate Code (409 Conflict)
+### Expect: 409 Conflict, CONFLICT code
+### ----------------------------------------------------------------------------
+# @name createWarehouseDuplicateCode
+POST {{baseUrl}}/warehouses
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Duplicate Code Warehouse",
+  "code": "WH-MIDWEST",
+  "city": "Kansas City"
+}
+
+### ----------------------------------------------------------------------------
+### 6. [UC-11] Create Warehouse - Validation Error (400 Bad Request)
+### Expect: 400 Bad Request, VALIDATION_ERROR code
+### ----------------------------------------------------------------------------
+# @name createWarehouseValidationError
+POST {{baseUrl}}/warehouses
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Incomplete Warehouse"
+}
+
+### ----------------------------------------------------------------------------
+### 7. [UC-11] Create Warehouse - Forbidden for Manager (403 Forbidden)
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name createWarehouseManagerForbidden
+POST {{baseUrl}}/warehouses
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Manager Attempt Warehouse",
+  "code": "WH-MGR-DENIED",
+  "city": "Denver"
+}
+
+### ----------------------------------------------------------------------------
+### 8. [UC-11] Create Warehouse - Forbidden for Staff (403 Forbidden)
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name createWarehouseStaffForbidden
+POST {{baseUrl}}/warehouses
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Staff Attempt Warehouse",
+  "code": "WH-STF-DENIED",
+  "city": "Austin"
+}
+
+### ----------------------------------------------------------------------------
+### 9. [UC-11] Create Warehouse - Unauthenticated (401 Unauthorized)
+### Expect: 401 Unauthorized, UNAUTHORIZED code
+### ----------------------------------------------------------------------------
+# @name createWarehouseUnauth
+POST {{baseUrl}}/warehouses
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Unauth Warehouse",
+  "code": "WH-NOAUTH",
+  "city": "Miami"
+}
+
+### ----------------------------------------------------------------------------
+### 10. [UC-12] List Warehouses (All Authenticated Roles - Staff Access)
+### Expect: 200 OK, paginated list of warehouses with totalStock and productCount
+### ----------------------------------------------------------------------------
+# @name listWarehousesStaff
+GET {{baseUrl}}/warehouses?page=1&limit=10
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 11. [UC-12] Search Warehouses by Keyword
+### Expect: 200 OK, filtered results matching name, code, or city
+### ----------------------------------------------------------------------------
+# @name searchWarehouses
+GET {{baseUrl}}/warehouses?search=Central
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 12. [UC-12] Filter Warehouses by City
+### Expect: 200 OK, filtered results matching city
+### ----------------------------------------------------------------------------
+# @name filterWarehousesByCity
+GET {{baseUrl}}/warehouses?city=Chicago
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 13. [UC-12] Get Warehouse by ID (Happy Path)
+### Expect: 200 OK, warehouse details with aggregated stock counts
+### ----------------------------------------------------------------------------
+# @name getWarehouseById
+GET {{baseUrl}}/warehouses/1
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 14. [UC-12] Get Warehouse by ID - 404 Unknown Warehouse
+### Expect: 404 Not Found, NOT_FOUND code
+### ----------------------------------------------------------------------------
+# @name getWarehouseNotFound
+GET {{baseUrl}}/warehouses/999999
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 15. [UC-13] Update Warehouse Details (Admin Only - Happy Path)
+### Expect: 200 OK, updated warehouse details
+### ----------------------------------------------------------------------------
+# @name updateWarehouse
+PUT {{baseUrl}}/warehouses/{{createdWarehouseId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Midwest Distribution Center (Expanded)",
+  "address": "1250 Logistics Parkway, Suite 200"
+}
+
+### ----------------------------------------------------------------------------
+### 16. [UC-13] Update Warehouse - Code Immutability Violation (400 Bad Request)
+### Expect: 400 Bad Request, VALIDATION_ERROR code
+### ----------------------------------------------------------------------------
+# @name updateWarehouseCodeImmutable
+PUT {{baseUrl}}/warehouses/{{createdWarehouseId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "code": "WH-MIDWEST-NEW"
+}
+
+### ----------------------------------------------------------------------------
+### 17. [UC-13] Update Warehouse - Forbidden for Staff (403 Forbidden)
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name updateWarehouseStaffForbidden
+PUT {{baseUrl}}/warehouses/{{createdWarehouseId}}
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Staff Rename Attempt"
+}
+
+### ----------------------------------------------------------------------------
+### 18. [UC-13] Deactivate Warehouse - Blocked When Warehouse Holds Stock (BR-08)
+### Expect: 422 Unprocessable Entity, UNPROCESSABLE_ENTITY code
+### ----------------------------------------------------------------------------
+# @name deactivateWarehouseBlockedByStock
+DELETE {{baseUrl}}/warehouses/1
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 19. [UC-13] Deactivate Warehouse - Forbidden for Manager (403 Forbidden)
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name deactivateWarehouseManagerForbidden
+DELETE {{baseUrl}}/warehouses/{{createdWarehouseId}}
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 20. [UC-13] Soft-Deactivate Empty Warehouse (Admin Only - Happy Path)
+### Expect: 200 OK, isActive: false
+### ----------------------------------------------------------------------------
+# @name deactivateWarehouseSuccess
+DELETE {{baseUrl}}/warehouses/{{createdWarehouseId}}
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 21. Verify Inactive Warehouse is Hidden from Staff (404 Not Found)
+### Expect: 404 Not Found
+### ----------------------------------------------------------------------------
+# @name verifyInactiveWarehouseHiddenFromStaff
+GET {{baseUrl}}/warehouses/{{createdWarehouseId}}
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 22. [UC-13] Reactivate Warehouse (Admin Setting isActive: true)
+### Expect: 200 OK, isActive: true
+### ----------------------------------------------------------------------------
+# @name reactivateWarehouse
+PUT {{baseUrl}}/warehouses/{{createdWarehouseId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "isActive": true
+}

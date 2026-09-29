@@ -1,0 +1,304 @@
+### ============================================================================
+### File: docs/api-tests/05-suppliers.http
+### Purpose: Manual and automated HTTP requests for Module 5 (Suppliers: UC-21 to UC-24)
+### Compatible with: VS Code REST Client, Thunder Client, and IntelliJ HTTP Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+@adminEmail = admin@mygodown.com
+@adminPassword = AdminPassword123!
+@managerEmail = manager@mygodown.com
+@managerPassword = ManagerPassword123!
+@staffEmail = staff@mygodown.com
+@staffPassword = StaffPassword123!
+
+### ----------------------------------------------------------------------------
+### 1. Authenticate as Administrator
+### ----------------------------------------------------------------------------
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Store admin token
+@adminToken = {{adminLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 2. Authenticate as Warehouse Manager
+### ----------------------------------------------------------------------------
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{managerPassword}}"
+}
+
+### Store manager token
+@managerToken = {{managerLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 3. Authenticate as Staff
+### ----------------------------------------------------------------------------
+# @name staffLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{staffEmail}}",
+  "password": "{{staffPassword}}"
+}
+
+### Store staff token
+@staffToken = {{staffLogin.response.body.data.token}}
+
+### ============================================================================
+### UC-21: Add Supplier
+### ============================================================================
+
+### 4. Create Supplier (Administrator - 201 Created)
+# @name createSupplierAdmin
+POST {{baseUrl}}/suppliers
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "LIVE-SUP-Quantum Technologies",
+  "contactName": "Dr. Eli Vance",
+  "email": "eli@quantum-tech-live.com",
+  "phone": "+1-555-0391",
+  "address": "77 Research Park Boulevard, Black Mesa, NM",
+  "isActive": true
+}
+
+### Store created supplier ID
+@liveSupplierId = {{createSupplierAdmin.response.body.data.id}}
+
+### 5. Create Supplier (Warehouse Manager - 201 Created)
+# @name createSupplierManager
+POST {{baseUrl}}/suppliers
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "LIVE-SUP-Aperture Logistics",
+  "contactName": "Cave Johnson",
+  "email": "cave@aperture-live.com",
+  "phone": "+1-555-0812",
+  "address": "1 Aperture Way, Upper Peninsula, MI"
+}
+
+### Store created manager supplier ID
+@managerSupplierId = {{createSupplierManager.response.body.data.id}}
+
+### 6. Create Supplier with Same Name Different Email (201 Created)
+# @name createSupplierDuplicateNameAllowed
+POST {{baseUrl}}/suppliers
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "LIVE-SUP-Quantum Technologies",
+  "email": "different_email@quantum.com"
+}
+
+### 7. Create Supplier Conflict: Duplicate Email (409 Conflict)
+# @name createSupplierDuplicateEmail
+POST {{baseUrl}}/suppliers
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Different Name Entirely",
+  "email": "eli@quantum-tech-live.com"
+}
+
+### 8. Create Supplier Validation: Missing Required Name (400 Bad Request)
+# @name createSupplierMissingName
+POST {{baseUrl}}/suppliers
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "noname@supplier.com"
+}
+
+### 9. Create Supplier Validation: Invalid Email Format (400 Bad Request)
+# @name createSupplierInvalidEmail
+POST {{baseUrl}}/suppliers
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Invalid Email Vendor",
+  "email": "not-an-email-address"
+}
+
+### 10. Create Supplier Authorization: Staff Forbidden (403 Forbidden)
+# @name createSupplierStaffForbidden
+POST {{baseUrl}}/suppliers
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Staff Supplier Attempt",
+  "email": "staff_attempt@vendor.com"
+}
+
+### 11. Create Supplier Authentication: Missing Token (401 Unauthorized)
+# @name createSupplierUnauthenticated
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Unauthenticated Vendor"
+}
+
+### ============================================================================
+### UC-22: View & Search Suppliers
+### ============================================================================
+
+### 12. List Suppliers (Staff - 200 OK with Pagination Meta)
+# @name listSuppliersStaff
+GET {{baseUrl}}/suppliers?page=1&limit=10&sortBy=name&sortOrder=asc
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 13. Search Suppliers by Keyword (Manager - 200 OK)
+# @name searchSuppliersManager
+GET {{baseUrl}}/suppliers?search=Quantum
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 14. Filter Suppliers by Active Status (Admin - 200 OK)
+# @name filterActiveSuppliersAdmin
+GET {{baseUrl}}/suppliers?isActive=true
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### 15. Get Single Supplier by ID (Staff - 200 OK with Product Count)
+# @name getSupplierByIdStaff
+GET {{baseUrl}}/suppliers/1
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 16. Get Non-Existent Supplier (404 Not Found)
+# @name getSupplierNotFound
+GET {{baseUrl}}/suppliers/999999
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ============================================================================
+### UC-23: Update Supplier
+### ============================================================================
+
+### 17. Update Supplier Details (Manager - 200 OK)
+# @name updateSupplierManager
+PUT {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "contactName": "Dr. Gordon Freeman",
+  "phone": "+1-555-0999"
+}
+
+### 18. Update Supplier: Shared Name Allowed (200 OK)
+# @name updateSupplierSharedNameAllowed
+PUT {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "LIVE-SUP-Aperture Logistics"
+}
+
+### 19. Update Supplier Conflict: Duplicate Email (409 Conflict)
+# @name updateSupplierDuplicateEmail
+PUT {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "cave@aperture-live.com"
+}
+
+### 20. Update Supplier Validation: Invalid Email (400 Bad Request)
+# @name updateSupplierInvalidEmail
+PUT {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "not-valid-email-here"
+}
+
+### 21. Update Supplier Authorization: Staff Forbidden (403 Forbidden)
+# @name updateSupplierStaffForbidden
+PUT {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "contactName": "Unauthorized Edit Attempt"
+}
+
+### 22. Reactivate Supplier via PUT (Manager - 200 OK)
+# @name reactivateSupplierManager
+PUT {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "isActive": true
+}
+
+### ============================================================================
+### UC-24: Deactivate Supplier
+### ============================================================================
+
+### 23. Deactivate Supplier Authorization: Staff Forbidden (403 Forbidden)
+# @name deactivateSupplierStaffForbidden
+DELETE {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 24. Deactivate Supplier (Manager - 200 OK Soft Delete)
+# @name deactivateSupplierManager
+DELETE {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### 25. Verify Inactive Supplier Hidden from Staff (Staff Single Lookup - 404 Not Found)
+# @name verifyInactiveSupplierHiddenStaff
+GET {{baseUrl}}/suppliers/{{liveSupplierId}}
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### 26. Deactivate Non-Existent Supplier (404 Not Found)
+# @name deactivateSupplierNotFound
+DELETE {{baseUrl}}/suppliers/999999
+Authorization: Bearer {{adminToken}}
+Accept: application/json

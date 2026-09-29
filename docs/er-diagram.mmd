@@ -1,0 +1,82 @@
+%% ============================================================================
+%% File: docs/er-diagram.mmd
+%% Purpose: Entity-Relationship Diagram for Retail Inventory Management System (RIMS).
+%% Why it exists: Visualizes tables, PK/FK/UK keys, attributes, and relationship cardinalities.
+%% ============================================================================
+
+erDiagram
+    users {
+        int id PK "Auto Increment"
+        string name "User full name"
+        string email UK "Unique login email"
+        string password_hash "Bcrypt hash"
+        enum role "admin, manager, staff"
+        tinyint is_active "Soft delete flag"
+        timestamp created_at "Record creation"
+        timestamp updated_at "Last update"
+    }
+
+    warehouses {
+        int id PK "Auto Increment"
+        string name "Facility name"
+        string code UK "Unique code (e.g. WH-CENTRAL)"
+        string address "Street address"
+        string city "City location"
+        tinyint is_active "Soft delete flag"
+        timestamp created_at "Record creation"
+        timestamp updated_at "Last update"
+    }
+
+    suppliers {
+        int id PK "Auto Increment"
+        string name "Company name"
+        string contact_name "Primary contact"
+        string email "Contact email"
+        string phone "Contact phone"
+        text address "Physical address"
+        tinyint is_active "Soft delete flag"
+        timestamp created_at "Record creation"
+        timestamp updated_at "Last update"
+    }
+
+    products {
+        int id PK "Auto Increment"
+        string sku UK "Unique Stock Keeping Unit"
+        string name "Product title"
+        text description "Detailed description"
+        string category "Classification category"
+        decimal unit_price "Selling price (DECIMAL 10,2)"
+        decimal cost_price "Purchase cost (DECIMAL 10,2)"
+        int reorder_level "Low stock trigger threshold"
+        int supplier_id FK "References suppliers(id)"
+        tinyint is_active "Soft delete flag"
+        timestamp created_at "Record creation"
+        timestamp updated_at "Last update"
+    }
+
+    stock_levels {
+        int id PK "Auto Increment"
+        int product_id FK "References products(id) [UK part 1]"
+        int warehouse_id FK "References warehouses(id) [UK part 2]"
+        int quantity "On-hand count (CHECK >= 0)"
+        timestamp created_at "Record creation"
+        timestamp updated_at "Last update"
+    }
+
+    stock_movements {
+        int id PK "Auto Increment"
+        int product_id FK "References products(id)"
+        int warehouse_id FK "References warehouses(id)"
+        int user_id FK "References users(id)"
+        enum movement_type "in, out, adjustment"
+        int quantity "Movement quantity"
+        string reference "Reference notes or document ID"
+        timestamp created_at "Immutable log timestamp"
+    }
+
+    suppliers ||--o{ products : "supplies"
+    products ||--o{ stock_levels : "tracked_in"
+    warehouses ||--o{ stock_levels : "holds"
+    products ||--o{ stock_movements : "affects"
+    warehouses ||--o{ stock_movements : "occurs_at"
+    users ||--o{ stock_movements : "authorized_by"

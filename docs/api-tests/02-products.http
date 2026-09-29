@@ -1,0 +1,225 @@
+### ============================================================================
+### File: docs/api-tests/02-products.http
+### Purpose: Manual and automated HTTP requests for Module 2 (Products: UC-07 to UC-10)
+### Compatible with: VS Code REST Client, Thunder Client, and IntelliJ HTTP Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+@managerEmail = manager@mygodown.com
+@managerPassword = ManagerPassword123!
+@staffEmail = staff@mygodown.com
+@staffPassword = StaffPassword123!
+
+### ----------------------------------------------------------------------------
+### 1. Authenticate as Warehouse Manager
+### ----------------------------------------------------------------------------
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{managerPassword}}"
+}
+
+@managerToken = {{managerLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 2. Authenticate as Staff
+### ----------------------------------------------------------------------------
+# @name staffLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{staffEmail}}",
+  "password": "{{staffPassword}}"
+}
+
+@staffToken = {{staffLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 3. [UC-07] Add Product - Happy Path (Warehouse Manager)
+### Expect: 201 Created, product details with isActive = true
+### ----------------------------------------------------------------------------
+# @name createProduct
+POST {{baseUrl}}/products
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sku": "TOOL-AIR-COMP-01",
+  "name": "50L Quiet Industrial Air Compressor",
+  "description": "Oil-free silent air compressor for pneumatic tools",
+  "category": "Power Tools",
+  "unitPrice": 349.99,
+  "costPrice": 220.00,
+  "reorderLevel": 8,
+  "supplierId": 1
+}
+
+@createdProductId = {{createProduct.response.body.data.id}}
+
+### ----------------------------------------------------------------------------
+### 4. [UC-07] Add Product - Duplicate SKU Conflict (BR-04)
+### Expect: 409 Conflict, code: CONFLICT, "SKU already exists"
+### ----------------------------------------------------------------------------
+# @name createProductDuplicateSku
+POST {{baseUrl}}/products
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sku": "TOOL-AIR-COMP-01",
+  "name": "Another Compressor With Duplicate SKU",
+  "unitPrice": 299.00,
+  "supplierId": 1
+}
+
+### ----------------------------------------------------------------------------
+### 5. [UC-07] Add Product - Non-Existent or Inactive Supplier (BR-07)
+### Expect: 422 Unprocessable Entity, "Supplier does not exist or is inactive"
+### ----------------------------------------------------------------------------
+# @name createProductInvalidSupplier
+POST {{baseUrl}}/products
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sku": "TOOL-ORPHAN-01",
+  "name": "Product with Bad Supplier",
+  "unitPrice": 49.99,
+  "supplierId": 99999
+}
+
+### ----------------------------------------------------------------------------
+### 6. [UC-07] Add Product - Validation Error (Negative Price)
+### Expect: 400 Bad Request, code: VALIDATION_ERROR
+### ----------------------------------------------------------------------------
+# @name createProductValidationError
+POST {{baseUrl}}/products
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sku": "TOOL-INVALID-01",
+  "name": "Invalid Price Product",
+  "unitPrice": -15.00,
+  "supplierId": 1
+}
+
+### ----------------------------------------------------------------------------
+### 7. [UC-07] Add Product - Forbidden for Staff Role
+### Expect: 403 Forbidden, code: FORBIDDEN
+### ----------------------------------------------------------------------------
+# @name createProductStaffForbidden
+POST {{baseUrl}}/products
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sku": "TOOL-STAFF-01",
+  "name": "Staff Attempted Product",
+  "unitPrice": 99.00,
+  "supplierId": 1
+}
+
+### ----------------------------------------------------------------------------
+### 8. [UC-08] View Products List - Manager Access (Shows Cost Price)
+### Expect: 200 OK, paginated products list with costPrice included
+### ----------------------------------------------------------------------------
+# @name listProductsManager
+GET {{baseUrl}}/products?page=1&limit=10&category=Power Tools
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 9. [UC-08] View Products List - Staff Access (Hides Cost Price - BR-05)
+### Expect: 200 OK, paginated products list where costPrice field is OMITTED
+### ----------------------------------------------------------------------------
+# @name listProductsStaff
+GET {{baseUrl}}/products?page=1&limit=10
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 10. [UC-08] Search Products by Keyword (Matches Name or SKU)
+### Expect: 200 OK, filtered results matching query
+### ----------------------------------------------------------------------------
+# @name searchProducts
+GET {{baseUrl}}/products?search=Compressor
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 11. [UC-08] Get Single Product by ID - Manager
+### Expect: 200 OK, full details including costPrice and totalStock
+### ----------------------------------------------------------------------------
+# @name getProductByIdManager
+GET {{baseUrl}}/products/{{createdProductId}}
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 12. [UC-08] Get Single Product by ID - Staff (Cost Price Hidden)
+### Expect: 200 OK, details without costPrice
+### ----------------------------------------------------------------------------
+# @name getProductByIdStaff
+GET {{baseUrl}}/products/{{createdProductId}}
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 13. [UC-09] Update Product - Happy Path (Warehouse Manager)
+### Expect: 200 OK, updated fields reflected in response
+### ----------------------------------------------------------------------------
+# @name updateProduct
+PUT {{baseUrl}}/products/{{createdProductId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "50L Ultra-Quiet Industrial Air Compressor (Updated)",
+  "unitPrice": 369.99,
+  "reorderLevel": 12
+}
+
+### ----------------------------------------------------------------------------
+### 14. [UC-09] Update Product - Attempting to Modify SKU (BR-04)
+### Expect: 400 Bad Request ("SKU is immutable and cannot be modified after creation")
+### ----------------------------------------------------------------------------
+# @name updateProductSkuImmutable
+PUT {{baseUrl}}/products/{{createdProductId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "sku": "MODIFIED-SKU-FAIL"
+}
+
+### ----------------------------------------------------------------------------
+### 15. [UC-10] Soft-Deactivate Product (Warehouse Manager)
+### Expect: 200 OK, isActive = false, remainingStock advisory notice
+### ----------------------------------------------------------------------------
+# @name deactivateProduct
+DELETE {{baseUrl}}/products/{{createdProductId}}
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 16. [UC-10] Deactivated Product Hidden from Staff (BR-07)
+### Expect: 404 Not Found when Staff queries the deactivated product
+### ----------------------------------------------------------------------------
+# @name staffAccessDeactivatedProduct
+GET {{baseUrl}}/products/{{createdProductId}}
+Authorization: Bearer {{staffToken}}
+Accept: application/json

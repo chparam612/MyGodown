@@ -1,0 +1,22 @@
+### ============================================================================
+### File: docs/api-tests/00-health-auth.http
+### Purpose: API test requests for Module 0 (Health & Foundation)
+### Compatible with: VS Code REST Client and Thunder Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+
+### ----------------------------------------------------------------------------
+### [Health Probe] Check System & Database Health
+### ----------------------------------------------------------------------------
+# @name healthCheck
+GET {{baseUrl}}/health
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### [404 Error Envelope] Access Non-Existent Route
+### Expect: 404 Not Found with standard { success: false, error: { code, message } }
+### ----------------------------------------------------------------------------
+# @name nonExistentRoute
+GET {{baseUrl}}/non-existent-endpoint
+Accept: application/json

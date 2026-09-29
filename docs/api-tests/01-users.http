@@ -1,0 +1,354 @@
+### ============================================================================
+### File: docs/api-tests/01-users.http
+### Purpose: Manual and automated HTTP requests for Module 1 (Auth & Users)
+### Compatible with: VS Code REST Client, Thunder Client, and IntelliJ HTTP Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+@adminEmail = admin@mygodown.com
+@adminPassword = AdminPassword123!
+@managerEmail = manager@mygodown.com
+@managerPassword = ManagerPassword123!
+@staffEmail = staff@mygodown.com
+@staffPassword = StaffPassword123!
+
+### ----------------------------------------------------------------------------
+### 1. [UC-01] Admin Login (Happy Path)
+### Expect: 200 OK, token in data.token, user details (no password_hash)
+### ----------------------------------------------------------------------------
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Store token from login response
+@adminToken = {{adminLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 2. [UC-01] Login Failure - Validation Error (Missing Password)
+### Expect: 400 Bad Request, VALIDATION_ERROR code with field-level details
+### ----------------------------------------------------------------------------
+# @name loginValidationFail
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "invalid-email-format"
+}
+
+### ----------------------------------------------------------------------------
+### 3. [UC-01] Login Failure - Invalid Credentials
+### Expect: 401 Unauthorized, generic message "Invalid email or password"
+### ----------------------------------------------------------------------------
+# @name loginInvalidCredentials
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "WrongPassword123!"
+}
+
+### ----------------------------------------------------------------------------
+### 4. [UC-01] Login Failure - Deactivated Account
+### Expect: 401 Unauthorized, generic message "Invalid email or password"
+### ----------------------------------------------------------------------------
+# @name loginDeactivatedUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "inactive@test.com",
+  "password": "{{adminPassword}}"
+}
+
+### ----------------------------------------------------------------------------
+### 5. [UC-02] Get Current User Profile (Happy Path)
+### Expect: 200 OK, returns user object of current token holder
+### ----------------------------------------------------------------------------
+# @name getMe
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 6. [UC-02] Get Current User Profile - Unauthenticated
+### Expect: 401 Unauthorized, UNAUTHORIZED code
+### ----------------------------------------------------------------------------
+# @name getMeUnauthenticated
+GET {{baseUrl}}/auth/me
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 7. [UC-P01] Change Own Password (Happy Path)
+### Expect: 200 OK, success message
+### ----------------------------------------------------------------------------
+# @name changePassword
+POST {{baseUrl}}/auth/change-password
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "currentPassword": "{{adminPassword}}",
+  "newPassword": "NewAdmin@123"
+}
+
+### Revert password back so subsequent test runs work cleanly
+# @name revertPassword
+POST {{baseUrl}}/auth/change-password
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "currentPassword": "NewAdmin@123",
+  "newPassword": "{{adminPassword}}"
+}
+
+### ----------------------------------------------------------------------------
+### 8. [UC-03] Create User (Admin Only - Happy Path)
+### Expect: 201 Created, returns created user object without password
+### ----------------------------------------------------------------------------
+# @name createUser
+POST {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Jane Logistics",
+  "email": "jane.logistics@example.com",
+  "password": "Password@123",
+  "role": "staff"
+}
+
+### ----------------------------------------------------------------------------
+### 9. [UC-03] Create User - Duplicate Email Conflict
+### Expect: 409 Conflict, CONFLICT code
+### ----------------------------------------------------------------------------
+# @name createUserDuplicateEmail
+POST {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Another Jane",
+  "email": "jane.logistics@example.com",
+  "password": "Password@123",
+  "role": "staff"
+}
+
+### ----------------------------------------------------------------------------
+### 10. Manager Login for Permission Checks
+### ----------------------------------------------------------------------------
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{managerPassword}}"
+}
+
+@managerToken = {{managerLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 11. [UC-03] Create User - Forbidden (Manager Trying to Create User)
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name createUserForbidden
+POST {{baseUrl}}/users
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Unauthorized User",
+  "email": "unauth@example.com",
+  "password": "Password@123",
+  "role": "staff"
+}
+
+### ----------------------------------------------------------------------------
+### 12. [UC-04] List Users (Admin Access - Happy Path)
+### Expect: 200 OK, paginated list of users and meta
+### ----------------------------------------------------------------------------
+# @name listUsers
+GET {{baseUrl}}/users?page=1&limit=10&role=staff
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 13. [UC-04] List Users - Forbidden for Manager (Admin Only Route)
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name listUsersManagerForbidden
+GET {{baseUrl}}/users
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 14. [UC-04] Get User by ID (Admin Access)
+### Expect: 200 OK, user details
+### ----------------------------------------------------------------------------
+# @name getUserById
+GET {{baseUrl}}/users/2
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 15. [UC-04] Get User by ID - Forbidden for Manager
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name getUserByIdManagerForbidden
+GET {{baseUrl}}/users/2
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 16. [UC-04] Get User by ID - 404 Unknown User
+### Expect: 404 Not Found, NOT_FOUND code
+### ----------------------------------------------------------------------------
+# @name getUserByIdNotFound
+GET {{baseUrl}}/users/999999
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 17. [UC-05] Update User (Admin Only - Happy Path)
+### Expect: 200 OK, updated user details
+### ----------------------------------------------------------------------------
+# @name updateUser
+PUT {{baseUrl}}/users/3
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Updated Staff Name",
+  "role": "staff",
+  "isActive": true
+}
+
+### ----------------------------------------------------------------------------
+### 18. [UC-05] Reactivate User (Admin Setting isActive: true)
+### Expect: 200 OK, user marked with isActive = true
+### ----------------------------------------------------------------------------
+# @name reactivateUser
+PUT {{baseUrl}}/users/4
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "isActive": true
+}
+
+### ----------------------------------------------------------------------------
+### 19. [UC-05] Admin Self-Deactivation Block
+### Expect: 403 Forbidden ("Administrators cannot deactivate their own account")
+### ----------------------------------------------------------------------------
+# @name selfDeactivationBlock
+PUT {{baseUrl}}/users/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "isActive": false
+}
+
+### ----------------------------------------------------------------------------
+### 20. [UC-05] Admin Self-Demotion Block
+### Expect: 403 Forbidden ("Administrators cannot demote their own role")
+### ----------------------------------------------------------------------------
+# @name selfDemotionBlock
+PUT {{baseUrl}}/users/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "role": "manager"
+}
+
+### ----------------------------------------------------------------------------
+### 21. [UC-06] Last Active Admin Deactivation Block (DELETE /api/users/1)
+### Expect: 403 Forbidden ("Administrators cannot deactivate their own account" or "Cannot deactivate last admin")
+### ----------------------------------------------------------------------------
+# @name lastAdminDeactivationBlock
+DELETE {{baseUrl}}/users/1
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 22. [UC-P02] Admin Reset Another User Password (Happy Path)
+### Expect: 200 OK, "Password reset successfully"
+### ----------------------------------------------------------------------------
+# @name adminResetUserPassword
+POST {{baseUrl}}/users/3/reset-password
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "password": "NewStaffPassword@123"
+}
+
+### ----------------------------------------------------------------------------
+### 23. [UC-P02] Admin Reset User Password - Weak Password (Validation Error)
+### Expect: 400 Bad Request, VALIDATION_ERROR code
+### ----------------------------------------------------------------------------
+# @name adminResetUserPasswordWeak
+POST {{baseUrl}}/users/3/reset-password
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "password": "short"
+}
+
+### ----------------------------------------------------------------------------
+### 24. [UC-P02] Admin Reset User Password - Forbidden for Staff/Manager
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name adminResetUserPasswordForbidden
+POST {{baseUrl}}/users/3/reset-password
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "password": "ValidPassword@123"
+}
+
+### ----------------------------------------------------------------------------
+### 25. [UC-06] Soft-Deactivate User (Admin Only)
+### Expect: 200 OK, user marked with is_active = 0
+### ----------------------------------------------------------------------------
+# @name deactivateUser
+DELETE {{baseUrl}}/users/3
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 26. Deactivated User Token Rejected on Protected Route
+### Login as user 3 with updated password before deactivation, then verify rejection
+### Expect: 401 Unauthorized ("User account has been deactivated")
+### ----------------------------------------------------------------------------
+# @name verifyDeactivatedUserTokenRejected
+GET {{baseUrl}}/products
+Authorization: Bearer {{staffToken}}
+Accept: application/json

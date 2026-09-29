@@ -1,0 +1,315 @@
+### ============================================================================
+### File: docs/api-tests/04-inventory.http
+### Purpose: Manual and automated HTTP requests for Module 4 (Inventory: UC-14 to UC-20)
+### Compatible with: VS Code REST Client, Thunder Client, and IntelliJ HTTP Client
+### ============================================================================
+
+@baseUrl = http://localhost:5000/api
+@adminEmail = admin@mygodown.com
+@adminPassword = AdminPassword123!
+@managerEmail = manager@mygodown.com
+@managerPassword = ManagerPassword123!
+@staffEmail = staff@mygodown.com
+@staffPassword = StaffPassword123!
+
+### ----------------------------------------------------------------------------
+### 1. Authenticate as Administrator
+### ----------------------------------------------------------------------------
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+### Store token
+@adminToken = {{adminLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 2. Authenticate as Warehouse Manager
+### ----------------------------------------------------------------------------
+# @name managerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{managerEmail}}",
+  "password": "{{managerPassword}}"
+}
+
+### Store token
+@managerToken = {{managerLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 3. Authenticate as Staff
+### ----------------------------------------------------------------------------
+# @name staffLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{staffEmail}}",
+  "password": "{{staffPassword}}"
+}
+
+### Store token
+@staffToken = {{staffLogin.response.body.data.token}}
+
+### ----------------------------------------------------------------------------
+### 4. [UC-14] View Inventory Overview (Staff Access - costPrice Omitted)
+### Expect: 200 OK, paginated stock list, costPrice undefined for staff
+### ----------------------------------------------------------------------------
+# @name viewInventoryStaff
+GET {{baseUrl}}/inventory?page=1&limit=10
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 5. [UC-14] View Inventory Overview (Manager Access - costPrice Included)
+### Expect: 200 OK, costPrice visible to manager
+### ----------------------------------------------------------------------------
+# @name viewInventoryManager
+GET {{baseUrl}}/inventory?page=1&limit=5
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 6. [UC-14] View Inventory Filtered by Warehouse
+### Expect: 200 OK, items filtered to specified warehouse
+### ----------------------------------------------------------------------------
+# @name viewInventoryFilteredWarehouse
+GET {{baseUrl}}/inventory?warehouseId=1&limit=5
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 7. [UC-15] Check Product Stock Availability Across Warehouses
+### Expect: 200 OK, totalQuantity and warehouse breakdown
+### ----------------------------------------------------------------------------
+# @name checkAvailability
+GET {{baseUrl}}/inventory/availability?productId=1
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 8. [UC-15] Check Stock Availability with Requested Quantity
+### Expect: 200 OK, isAvailable boolean flag
+### ----------------------------------------------------------------------------
+# @name checkAvailabilityWithQuantity
+GET {{baseUrl}}/inventory/availability?productId=1&quantity=10
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 9. [UC-15] Check Availability for Unknown Product (404 Not Found)
+### Expect: 404 Not Found, NOT_FOUND code
+### ----------------------------------------------------------------------------
+# @name checkAvailabilityNotFound
+GET {{baseUrl}}/inventory/availability?productId=999999
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 10. [UC-16] Record Inbound Stock Movement (Happy Path)
+### Expect: 201 Created, updated stock level and movement ID
+### ----------------------------------------------------------------------------
+# @name recordMovementInbound
+POST {{baseUrl}}/inventory/movements
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "movementType": "in",
+  "quantity": 25,
+  "reference": "PO-RECEIVE-001"
+}
+
+### ----------------------------------------------------------------------------
+### 11. [UC-16] Record Outbound Movement - Insufficient Stock (422)
+### Expect: 422 Unprocessable Entity, INSUFFICIENT_STOCK code
+### ----------------------------------------------------------------------------
+# @name recordMovementInsufficientStock
+POST {{baseUrl}}/inventory/movements
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "movementType": "out",
+  "quantity": 999999,
+  "reference": "OVERDRAW-ATTEMPT"
+}
+
+### ----------------------------------------------------------------------------
+### 12. [UC-17] Adjust Stock (Admin / Manager Only - Happy Path)
+### Expect: 200 OK, previousQuantity, countedQuantity, signed delta, reason
+### ----------------------------------------------------------------------------
+# @name adjustStock
+POST {{baseUrl}}/inventory/adjust
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "countedQuantity": 150,
+  "reason": "Quarterly physical cycle count audit"
+}
+
+### ----------------------------------------------------------------------------
+### 13. [UC-17] Adjust Stock - Missing Reason Validation Error (400 Bad Request)
+### Expect: 400 Bad Request, VALIDATION_ERROR code
+### ----------------------------------------------------------------------------
+# @name adjustStockMissingReason
+POST {{baseUrl}}/inventory/adjust
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "countedQuantity": 150
+}
+
+### ----------------------------------------------------------------------------
+### 14. [UC-17] Adjust Stock - Forbidden for Staff (403 Forbidden)
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name adjustStockStaffForbidden
+POST {{baseUrl}}/inventory/adjust
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "countedQuantity": 150,
+  "reason": "Staff attempt adjustment"
+}
+
+### ----------------------------------------------------------------------------
+### 15. [UC-18] Transfer Stock Between Warehouses (Admin / Manager Only)
+### Expect: 200 OK, transferReference, sourceRemainingStock, destinationNewStock
+### ----------------------------------------------------------------------------
+# @name transferStock
+POST {{baseUrl}}/inventory/transfer
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 2,
+  "quantity": 10,
+  "reason": "Regional stock rebalance"
+}
+
+### ----------------------------------------------------------------------------
+### 16. [UC-18] Transfer Stock - Same Warehouse Error (400 Bad Request)
+### Expect: 400 Bad Request, VALIDATION_ERROR code
+### ----------------------------------------------------------------------------
+# @name transferStockSameWarehouse
+POST {{baseUrl}}/inventory/transfer
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 1,
+  "quantity": 5
+}
+
+### ----------------------------------------------------------------------------
+### 17. [UC-18] Transfer Stock - Forbidden for Staff (403 Forbidden)
+### Expect: 403 Forbidden, FORBIDDEN code
+### ----------------------------------------------------------------------------
+# @name transferStockStaffForbidden
+POST {{baseUrl}}/inventory/transfer
+Authorization: Bearer {{staffToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 2,
+  "quantity": 5
+}
+
+### ----------------------------------------------------------------------------
+### 18. [UC-18] Transfer Stock - Insufficient Stock in Source (422)
+### Expect: 422 Unprocessable Entity, INSUFFICIENT_STOCK code
+### ----------------------------------------------------------------------------
+# @name transferStockInsufficient
+POST {{baseUrl}}/inventory/transfer
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 2,
+  "quantity": 999999,
+  "reason": "Excessive transfer attempt"
+}
+
+### ----------------------------------------------------------------------------
+### 19. [UC-19] View Movement History (Newest First)
+### Expect: 200 OK, paginated movements sorted newest first
+### ----------------------------------------------------------------------------
+# @name listMovements
+GET {{baseUrl}}/inventory/movements?page=1&limit=10
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 20. [UC-19] View Movement History Filtered by Type (adjustment)
+### Expect: 200 OK, all items have movementType: "adjustment"
+### ----------------------------------------------------------------------------
+# @name listMovementsFiltered
+GET {{baseUrl}}/inventory/movements?type=adjustment
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 21. [UC-20] Monitor Low Stock Items (Staff Access - costPrice Omitted)
+### Expect: 200 OK, items with quantity <= reorderLevel, deficit calculated
+### ----------------------------------------------------------------------------
+# @name monitorLowStockStaff
+GET {{baseUrl}}/inventory/low-stock
+Authorization: Bearer {{staffToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 22. [UC-20] Monitor Low Stock Items (Manager Access - costPrice Included)
+### Expect: 200 OK, costPrice present for each item
+### ----------------------------------------------------------------------------
+# @name monitorLowStockManager
+GET {{baseUrl}}/inventory/low-stock
+Authorization: Bearer {{managerToken}}
+Accept: application/json
+
+### ----------------------------------------------------------------------------
+### 23. Unauthenticated Access Rejected (401 Unauthorized)
+### Expect: 401 Unauthorized, UNAUTHORIZED code
+### ----------------------------------------------------------------------------
+# @name inventoryUnauth
+GET {{baseUrl}}/inventory
+Accept: application/json
