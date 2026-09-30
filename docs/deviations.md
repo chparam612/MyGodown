@@ -159,6 +159,7 @@ This document records deliberate design decisions, deviations from initial defau
   - Zero inventory stock was mutated (cancellation leaves stock untouched by design).
   - Dashboard `openSalesOrders` KPI successfully reset to **0**, restoring a completely clean operational baseline for Phase 4 Step 4 testing.
 
+
 ---
 
 ## 10. Containerization & Database Security Simplifications
@@ -170,6 +171,14 @@ This document records deliberate design decisions, deviations from initial defau
   - Accepted for current project scope and submission baseline to simplify automated migration, seeding scripts, and test suite resets (`inventory_test_db` dynamic drop/create).
   - Recommended future production hardening: provision dedicated least-privilege application database credentials.
 
+---
 
+## 11. Code Quality & Maintenance (Part C Audit)
 
-
+### 11.1 Frontend Order Form Modal Duplication (SEC-06 Architecture Finding)
+- **Context & Observation:**
+  - A static analysis and manual audit across frontend pages identified approximately 180+ lines of structural similarity between `frontend/src/pages/PurchaseOrders.jsx` and `frontend/src/pages/SalesOrders.jsx`.
+  - Both pages implement parallel logic for line item addition/removal, dynamic quantity increments, unit pricing auto-population, and status confirmation modals.
+- **Decision:**
+  - In accordance with the Part C audit review, this duplication is classified as acceptable domain-parallel UI logic rather than dead code or copy-paste bloat.
+  - To prevent regressions in working production components during security hardening, refactoring into shared generic components (e.g. `<OrderFormModal />`, `<OrderItemsTable />`, and `<OrderStatusChip />`) is deferred to a future maintenance sprint.
