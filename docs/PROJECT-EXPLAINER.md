@@ -8,7 +8,7 @@
 
 ### 1. What Problem Does This System Solve?
 
-Imagine running a growing retail company that sells hundreds of different products across three different warehouses in three separate cities. 
+Imagine running a growing retail company that sells hundreds of different products across multiple regional warehouses in different cities. 
 
 Without a dedicated system, tracking what you own quickly turns into chaos:
 * Staff track products using handwritten clipboards or messy spreadsheets.
@@ -48,7 +48,7 @@ Rather than complicated technical permissions, the system is designed around how
   * Monitors low-stock alerts to reorder inventory before popular products run out.
   * Creates and sends Purchase Orders to verified suppliers, negotiating prices and tracking deliveries.
   * Coordinates safe stock transfers between different warehouse branches.
-  * Performs physical inventory audits (stock counts) and logs adjustments with mandatory explanations (e.g., "5 units water damaged during monsoon transit").
+  * Performs physical inventory audits (stock counts) and logs adjustments with mandatory explanations (e.g., "5 units water damaged during transit").
   * Reviews the total financial value of all inventory sitting in stock.
 
 #### 📦 The Inventory Staff *(Frontline Operations & Order Processing)*
@@ -64,20 +64,20 @@ Rather than complicated technical permissions, the system is designed around how
 ### 3. Feature Walkthrough: A Day in the Life of Your Inventory
 
 #### 🏷️ 1. The Central Product Catalog
-* **The Journey:** When the business begins stocking a new line of wireless headphones, the manager opens the catalog and enters the product's name, brand category, barcode/SKU, selling price, and supplier. 
+* **The Journey:** When the business begins stocking a new line of power tools, the manager opens the catalog and enters the product's name, brand category, barcode/SKU, selling price, and supplier. 
 * **What It Does:** Every item in the company is cataloged in one place with a unique digital fingerprint, guaranteeing that products are never duplicated or mislabeled.
 
 #### 🏢 2. Multi-Warehouse Stock Tracking
-* **The Journey:** A retail store in Mumbai runs low on monitors, while the Pune warehouse has 200 units sitting on pallets. 
-* **What It Does:** The manager initiates a stock transfer between Pune and Mumbai. The system automatically reduces Pune's count, increases Mumbai's count, and logs a tamper-proof transfer receipt linking both locations so items never vanish in transit.
+* **The Journey:** A retail store in Chicago runs low on drills, while the Newark warehouse has 200 units sitting on pallets. 
+* **What It Does:** The manager initiates a stock transfer between Newark and Chicago. The system automatically reduces Newark's count, increases Chicago's count, and logs a tamper-proof transfer receipt linking both locations so items never vanish in transit.
 
 #### 📥 3. Purchase Orders (Restocking from Suppliers)
 * **The Journey:** Supplies are running low. The warehouse manager selects an authorized supplier, adds 500 units of stock, and submits a formal Purchase Order.
 * **What It Does:** When the delivery truck arrives at the loading dock, warehouse workers inspect the pallets and click "Receive." In that exact millisecond, warehouse stock counts increase automatically, and the order is marked complete.
 
 #### 📤 4. Sales Orders (Fulfilling Customer Purchases)
-* **The Journey:** A customer purchases 20 coffee makers. An inventory staff member enters the order and clicks "Confirm."
-* **What It Does:** The system verifies that 20 coffee makers are physically available in the selected warehouse. When staff pack and ship the parcel, clicking "Fulfill" atomically deducts the 20 units from the warehouse shelves. If someone tries to sell items that don't exist, the system immediately blocks the sale.
+* **The Journey:** A customer purchases 20 tools. An inventory staff member enters the order and clicks "Confirm."
+* **What It Does:** The system verifies that 20 units are physically available in the selected warehouse. When staff pack and ship the parcel, clicking "Fulfill" atomically deducts the 20 units from the warehouse shelves. If someone tries to sell items that don't exist, the system immediately blocks the sale.
 
 #### ⚠️ 5. Low-Stock Radar (Automatic Restock Warnings)
 * **The Journey:** A product's stock drops below its predefined safety threshold (for example, falling below 15 units).

@@ -87,6 +87,13 @@ All automated and live verification suites were executed against the live databa
   - Isolated Vendor Chunks: `vendor-utils` (57.09 kB), `vendor-mui` (70.37 kB), `vendor-react` (245.03 kB), `vendor-recharts` (297.71 kB), `vendor-datagrid` (709.02 kB).
 
 ### 2.3 Live End-to-End Verification Suites (against `inventory_db`)
+
+> [!NOTE]
+> **Dataset Baseline Scope Note (Phase 4 Verification Run vs. Scaled Canonical Enterprise):**  
+> The acceptance-testing evidence summarized below (and documented in detail in [`docs/test-evidence/demo-flow.md`](test-evidence/demo-flow.md) and [`docs/test-evidence/negative-tests.md`](test-evidence/negative-tests.md)) reflects the **Phase 4 verification run**, conducted against the initial controlled 28-product baseline (`inventory_db`: 28 active products, 3 warehouses, 5 suppliers) to record exact, noise-free step-by-step mathematical deltas and audit ledger increments.
+> 
+> Following Phase 4 audit sign-off, the live database was **SEPARATELY scaled** to the current canonical enterprise dataset (131 products, 8 industrial suppliers, 5 regional warehouses, 230+ orders) via `backend/scripts/seed_canonical_enterprise.js` for evaluation and demo presentation. See [Section 8.5](#85-enterprise-data-scaling--canonical-dataset-distinction) for the explicit timeline, reconciliation, and canonical figures.
+
 1. **Full Demo Flow (Task 1):** 8/8 end-to-end operational lifecycle steps passed:
    - **Step 1 (Admin Authentication):** Authenticated `admin@mygodown.com` via `POST /api/auth/login`, received valid JWT token.
    - **Step 2 (Baseline State & KPIs):** Product `#1` (`TOOL-DRL-001`, "Cordless Brushless Drill 18V") inspected on `inventory_db`: Warehouse `#1` (`WH-CENTRAL`) = 81 units, Warehouse `#2` (`WH-EAST`) = 48 units. Baseline dashboard KPIs: active products 28, total stock 1963, stockValue $52,691.00, lowStockCount 4, openPurchaseOrders 0, openSalesOrders 4.
@@ -266,32 +273,22 @@ The entire RIMS stack was containerized, built, and verified running on Docker D
    - `GET http://localhost:3000/`: Returned `200 OK` serving React SPA from Nginx.
    - `POST http://localhost:3000/api/auth/login`: Successfully proxied from frontend Nginx to backend container, returning `200 OK` with valid token.
 
-5. **Enterprise Data Scaling (100+ Rows per Relevant Table):**
-   - **Seeder Utility:** [`backend/scripts/seed_enterprise_data.js`](file:///C:/Users/prtv1/OneDrive/Attachments/Desktop/HCL%20Tech/backend/scripts/seed_enterprise_data.js) was created to scale transactional and catalog records to full enterprise volume with realistic multi-warehouse distribution, catalog pricing, and order lifecycles.
-   - **Containerized Database (`rims_mysql`):**
-     - `products`: 170 rows
-     - `purchase_order_items`: 230 rows
-     - `purchase_orders`: 115 rows
-     - `sales_order_items`: 230 rows
-     - `sales_orders`: 115 rows
-     - `stock_levels`: 376 rows
-     - `stock_movements`: 260 rows
-     - `suppliers`: 115 rows
-     - `warehouses`: 28 rows
-     - `users`: 5 rows
-   - **Local Development Database (`inventory_db`):**
-     - `products`: 212 rows
-     - `purchase_order_items`: 255 rows
-     - `purchase_orders`: 139 rows
-     - `sales_order_items`: 264 rows
-     - `sales_orders`: 146 rows
-     - `stock_levels`: 221 rows
-     - `stock_movements`: 260 rows
-     - `suppliers`: 145 rows
-     - `warehouses`: 33 rows
-     - `users`: 21 rows
-   - **Baseline Evolution Note:** The initial live demo flow documented in [`docs/test-evidence/demo-flow.md`](file:///C:/Users/prtv1/OneDrive/Attachments/Desktop/HCL%20Tech/docs/test-evidence/demo-flow.md) was captured against the initial 28-product baseline in `inventory_db` to record exact step-by-step audit increments. Both live databases have now been scaled to full enterprise volume.
-   - **Test Isolation Invariant:** The automated test runner executes exclusively against `inventory_test_db` (guarded by `tests/setupTestDb.js`), maintaining 100% green status (217/217 passing) regardless of live dataset volume.
+5. **Enterprise Data Scaling & Canonical Dataset Distinction:**
+   - **Chronological Timeline & Dataset Distinction:**
+     > [!IMPORTANT]
+     > **Dataset Distinction & Acceptance Testing Evidence Integrity:**  
+     > 1. **Phase 4 Verification Run (Historical Evidence Baseline):** The detailed acceptance testing evidence recorded in [`docs/test-evidence/demo-flow.md`](test-evidence/demo-flow.md) and [`docs/test-evidence/negative-tests.md`](test-evidence/negative-tests.md) reflects the original Phase 4 verification run conducted against the controlled 28-product baseline (3 warehouses, 5 suppliers) in `inventory_db`. This controlled baseline was deliberately used to verify step-by-step mathematical invariants, atomic stock deductions, and audit ledger entries without background noise. Those historical test evidence documents remain untouched as a faithful audit record of that test run.
+     > 2. **Canonical Scaled Enterprise Dataset (Live Demo & Presentation):** Following Phase 4 audit completion, the live environment was **SEPARATELY scaled** to the current canonical enterprise dataset via [`backend/scripts/seed_canonical_enterprise.js`](../backend/scripts/seed_canonical_enterprise.js) for live demonstration and presentation purposes.
+   - **Canonical Dataset Distribution (Containerized `rims_mysql` — Source of Truth):**
+     - **Products:** 131 active catalog products (with realistic technical specifications, measurements, and pricing across 5 industrial categories)
+     - **Suppliers:** Exactly 8 industrial vendors (e.g., *Apex Industrial Tools & Machinery*, *VoltCore Electronics & Sensor Systems*)
+     - **Warehouses:** Exactly 5 regional logistics hubs (*WH-CENTRAL* Chicago, *WH-EAST* Newark, *WH-WEST* Reno, *WH-SOUTH* Dallas, *WH-PNW* Seattle)
+     - **Orders:** 230 total orders (115 Purchase Orders and 115 Sales Orders across 25 corporate clients, totaling 230+ line items)
+     - **Stock Levels:** 220+ warehouse inventory allocations (with realistic multi-warehouse distribution and intentional low-stock scenarios)
+     - **Stock Movements:** 260 immutable audit ledger movements
+     - **Users:** Exactly 3 canonical baseline accounts (`admin@mygodown.com`, `manager@mygodown.com`, `staff@mygodown.com`)
+   - **Canonical Source of Truth:** The containerized database (`rims_mysql`) is the canonical source of truth for all live evaluation and demo activities.
+   - **Test Isolation Invariant:** The automated test runner executes exclusively against `inventory_test_db` (guarded by `tests/setupTestDb.js`), maintaining 100% green status (217/217 passing) completely isolated from the live datasets.
 
 ---
 
