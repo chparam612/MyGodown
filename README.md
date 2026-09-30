@@ -22,7 +22,7 @@ RIMS is designed for multi-facility retail warehousing and inventory operations,
   - **Web Framework:** Express 5 (RESTful architecture, JSON envelopes)
   - **Security:** Helmet (HTTP headers), CORS, express-rate-limit (brute force protection), bcryptjs (password hashing), jsonwebtoken (signed JWTs)
   - **Input Validation:** Joi schemas on headers, query parameters, URL params, and request bodies
-  - **Testing:** Jest, Supertest (216 automated integration tests across 9 test suites)
+  - **Testing:** Jest, Supertest (217 automated integration tests across 9 test suites)
 - **Database:**
   - **RDBMS:** MySQL Server 8.0.16+ (MySQL 9.7 verified)
   - **Driver:** `mysql2/promise` with connection pooling and ACID transaction management (`withTransaction`)
@@ -73,6 +73,9 @@ cp .env.example .env
 
 # Seed initial role accounts (Admin, Manager, Staff) with bcrypt hashes
 npm run seed:users
+
+# Optional: Seed full canonical enterprise demo dataset (131 products, 8 suppliers, 5 warehouses, 230 orders)
+npm run seed:canonical
 ```
 
 ### Step 4: Frontend Setup
@@ -138,7 +141,7 @@ The database comes pre-seeded with three operational role accounts:
 cd backend
 npm run dev      # Starts server on http://localhost:5000 with nodemon auto-reload
 npm start        # Starts production server on http://localhost:5000
-npm test         # Executes 216 Jest tests against inventory_test_db (--runInBand)
+npm test         # Executes 217 Jest tests against inventory_test_db (--runInBand)
 ```
 
 ### B. Run Frontend Only
