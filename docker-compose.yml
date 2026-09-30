@@ -1,0 +1,56 @@
+services:
+  mysql:
+    image: mysql:8.0.41
+    container_name: rims_mysql
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    volumes:
+      - rims_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - rims_network
+    # Port 3306 is NOT published to the host to avoid collisions with native MySQL
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rims_backend
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - rims_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rims_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    depends_on:
+      - backend
+    networks:
+      - rims_network
+
+volumes:
+  rims_mysql_data:
+    name: rims_mysql_data
+
+networks:
+  rims_network:
+    name: rims_network
+    driver: bridge

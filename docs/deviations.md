@@ -159,5 +159,17 @@ This document records deliberate design decisions, deviations from initial defau
   - Zero inventory stock was mutated (cancellation leaves stock untouched by design).
   - Dashboard `openSalesOrders` KPI successfully reset to **0**, restoring a completely clean operational baseline for Phase 4 Step 4 testing.
 
+---
+
+## 10. Containerization & Database Security Simplifications
+
+### 10.1 Database Superuser Usage (`DB_USER=root`)
+- **Behavior & Context:**
+  - Both native development configurations and containerized Docker configurations (`docker-compose.yml` / `.env.docker`) utilize `DB_USER=root` to connect to MySQL rather than a dedicated least-privilege service account (e.g. `rims_app` granted `SELECT, INSERT, UPDATE, DELETE` only).
+- **Design Simplification:**
+  - Accepted for current project scope and submission baseline to simplify automated migration, seeding scripts, and test suite resets (`inventory_test_db` dynamic drop/create).
+  - Recommended future production hardening: provision dedicated least-privilege application database credentials.
+
+
 
 

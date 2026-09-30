@@ -42,9 +42,14 @@ export class AuthService {
       role: user.role,
     };
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('FATAL: JWT_SECRET environment variable is not set. Refusing to sign tokens without a configured secret.');
+    }
+
     const token = jwt.sign(
       payload,
-      process.env.JWT_SECRET || 'super_secret_jwt_key_rims_2026_secure',
+      jwtSecret,
       { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
     );
 

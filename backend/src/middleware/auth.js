@@ -23,7 +23,10 @@ export async function authenticate(req, res, next) {
     }
 
     const token = authHeader.split(' ')[1];
-    const jwtSecret = process.env.JWT_SECRET || 'super_secret_jwt_key_rims_2026_secure';
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('FATAL: JWT_SECRET environment variable is not set. Refusing to verify tokens without a configured secret.');
+    }
 
     let decoded;
     try {

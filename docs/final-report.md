@@ -240,12 +240,36 @@ The following sections record all deliberate design decisions, deviations, and o
 
 ## 8. Deployment & Containerization Status
 
-**Docker: not started (awaiting approval)**
+**Docker Status: Fully Implemented, Hardened & Verified Live**
 
-No `Dockerfile`, `.dockerignore`, or `docker-compose.yml` files were created or modified during this phase.
+The entire RIMS stack was containerized, built, and verified running on Docker Desktop 29.8.1 with zero regressions:
+
+1. **Multi-Container Architecture (`docker-compose.yml`):**
+   - **`rims_mysql`:** Pinned official image `mysql:8.0.41` with persistent volume `rims_mysql_data` and internal network `rims_network`. Port 3306 is intentionally **not** published to the host, preventing collisions with host native MySQL. Container passed automated Docker health checks (`mysqladmin ping`).
+   - **`rims_backend`:** Pinned base image `node:24.13.1-alpine` matching `"engines": { "node": "24.13.1" }` in `backend/package.json`. Built with `npm ci --omit=dev`, non-root execution (`USER node`), and no `.env` files copied into the image. Exposes port 5000.
+   - **`rims_frontend`:** Multi-stage build (`node:24.13.1-alpine` build stage $\rightarrow$ `nginx:1.27.4-alpine` production stage). Runs as non-root user `nginx` on unprivileged port 8080 (mapped to host `3000:8080`), serving production assets with reverse-proxy forwarding `/api/*` requests directly to `http://backend:5000/api/`.
+
+2. **Security & Least-Privilege Verification:**
+   - **Layer Inspection (`docker history`):** Zero credentials, secrets, or `.env` files appear in image layers.
+   - **Filesystem Audit (`docker run --rm hcltech-backend sh -c "..."`):** `find / -name '.env*'` and `grep -rl 'JWT_SECRET=' /` returned zero matches, confirming no leaked secrets or env files in the image filesystem.
+   - **Non-Root Execution (`docker exec <container> whoami`):** Verified `rims_backend` outputs `node` and `rims_frontend` outputs `nginx` (neither runs as `root`).
+   - **Zero `:latest` Tags:** All base images in Dockerfiles and `docker-compose.yml` are strictly pinned (`node:24.13.1-alpine`, `nginx:1.27.4-alpine`, `mysql:8.0.41`).
+   - **Secret Hygiene & Rotation:** Database credentials and rotated `JWT_SECRET` (`2aa4...aa5d`) are supplied exclusively via `.env.docker` at runtime and excluded from git tracking via `.gitignore`. Hardcoded secret fallbacks were completely removed from `auth.js` and `auth.service.js`.
+
+3. **Containerized Database Seeding & Baseline State:**
+   - `database/schema.sql`, `database/migrations/002_orders.sql`, and `database/seed.sql` were executed against `rims_mysql`. Initial role accounts were seeded via `docker exec rims_backend node scripts/seedUsers.js`.
+   - Verified table row counts: `users: 3`, `warehouses: 3`, `suppliers: 5`, `products: 20`, `stock_levels: 39`.
+   - *Note on Baseline:* The containerized database is a freshly seeded baseline (20 products) and intentionally differs from the accumulated dev `inventory_db` (28 products) used in earlier test evidence — so this is not an inconsistency.
+
+4. **Live Container Smoke Test:**
+   - `POST http://localhost:5000/api/auth/login`: Returned `200 OK` with valid JWT and profile (`role: "admin"`).
+   - `GET http://localhost:5000/api/dashboard/summary`: Returned `200 OK` with verified baseline KPIs (`totalActiveProducts: 20`, `totalStockUnits: 1897`, `stockValue: 47407`, `lowStockCount: 4`, `openPurchaseOrders: 0`, `openSalesOrders: 0`).
+   - `GET http://localhost:3000/`: Returned `200 OK` serving React SPA from Nginx.
+   - `POST http://localhost:3000/api/auth/login`: Successfully proxied from frontend Nginx to backend container, returning `200 OK` with valid token.
 
 ---
 
 ### Audit Sign-off
 
-The Retail Inventory Management System (RIMS) has met all verification criteria for Phase 4. All core use cases (31/31) and implemented extensions (2/2) are functional, integrated, tested, and documented.
+The Retail Inventory Management System (RIMS) has met all verification criteria for Phase 4. All core use cases (31/31), implemented extensions (2/2), automated test suites (216/216 passing), security standards, and containerized Docker services are fully functional, integrated, tested, and documented.
+

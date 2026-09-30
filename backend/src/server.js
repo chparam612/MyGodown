@@ -14,6 +14,12 @@ const PORT = parseInt(process.env.PORT || '5000', 10);
 
 async function startServer() {
   try {
+    // Fail loudly at startup if JWT_SECRET is not set
+    if (!process.env.JWT_SECRET) {
+      console.error('[server Fatal Error]: JWT_SECRET environment variable is not set. Refusing to boot without a secure JWT signing secret.');
+      process.exit(1);
+    }
+
     // Verify database connectivity prior to listening
     const dbOk = await checkDbHealth();
     if (!dbOk) {
