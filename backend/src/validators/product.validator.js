@@ -90,7 +90,7 @@ export const updateProductSchema = Joi.object({
  */
 export const queryProductSchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(10),
+  limit: Joi.number().integer().min(1).max(250).default(10),
   search: Joi.string().trim().allow('').optional(),
   category: Joi.string().trim().optional(),
   supplierId: Joi.number().integer().positive().optional(),
