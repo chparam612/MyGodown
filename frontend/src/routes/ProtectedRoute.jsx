@@ -4,7 +4,6 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { useAuth } from '../context/useAuth.js';
-import { AccessDenied } from '../pages/AccessDenied.jsx';
 
 export function ProtectedRoute({ allowedRoles }) {
   const { isAuthenticated, user, loading } = useAuth();
@@ -37,7 +36,7 @@ export function ProtectedRoute({ allowedRoles }) {
   // Role gating check
   if (Array.isArray(allowedRoles) && user?.role) {
     if (!allowedRoles.includes(user.role)) {
-      return <AccessDenied />;
+      return <Navigate to="/access-denied" replace />;
     }
   }
 

@@ -72,6 +72,7 @@ export function Inventory() {
   const [stockError, setStockError] = useState(null);
   const [stockSearch, setStockSearch] = useState('');
   const [stockWarehouseFilter, setStockWarehouseFilter] = useState('');
+  const [stockProductFilter, setStockProductFilter] = useState('');
   const [stockLowOnly, setStockLowOnly] = useState(false);
 
   // =========================================================================
@@ -84,6 +85,9 @@ export function Inventory() {
   const [movementSearch, setMovementSearch] = useState('');
   const [movementTypeFilter, setMovementTypeFilter] = useState('');
   const [movementWarehouseFilter, setMovementWarehouseFilter] = useState('');
+  const [movementProductFilter, setMovementProductFilter] = useState('');
+  const [movementStartDate, setMovementStartDate] = useState('');
+  const [movementEndDate, setMovementEndDate] = useState('');
 
   // =========================================================================
   // TAB 2: Low Stock Monitor State
@@ -177,6 +181,7 @@ export function Inventory() {
       };
       if (stockSearch.trim()) params.search = stockSearch.trim();
       if (stockWarehouseFilter) params.warehouseId = stockWarehouseFilter;
+      if (stockProductFilter) params.productId = stockProductFilter;
       if (stockLowOnly) params.lowStock = 'true';
 
       const res = await inventoryApi.listStock(params);
@@ -187,7 +192,7 @@ export function Inventory() {
     } finally {
       setStockLoading(false);
     }
-  }, [stockMeta.page, stockMeta.limit, stockSearch, stockWarehouseFilter, stockLowOnly]);
+  }, [stockMeta.page, stockMeta.limit, stockSearch, stockWarehouseFilter, stockProductFilter, stockLowOnly]);
 
   // =========================================================================
   // FETCH MOVEMENT LEDGER (UC-19)
@@ -203,6 +208,9 @@ export function Inventory() {
       if (movementSearch.trim()) params.search = movementSearch.trim();
       if (movementTypeFilter) params.type = movementTypeFilter;
       if (movementWarehouseFilter) params.warehouseId = movementWarehouseFilter;
+      if (movementProductFilter) params.productId = movementProductFilter;
+      if (movementStartDate) params.startDate = movementStartDate;
+      if (movementEndDate) params.endDate = movementEndDate;
 
       const res = await inventoryApi.listMovements(params);
       setMovementRows(res.data || []);
@@ -212,7 +220,7 @@ export function Inventory() {
     } finally {
       setMovementLoading(false);
     }
-  }, [movementMeta.page, movementMeta.limit, movementSearch, movementTypeFilter, movementWarehouseFilter]);
+  }, [movementMeta.page, movementMeta.limit, movementSearch, movementTypeFilter, movementWarehouseFilter, movementProductFilter, movementStartDate, movementEndDate]);
 
   // =========================================================================
   // FETCH LOW STOCK ALERTS (UC-20)
@@ -237,12 +245,18 @@ export function Inventory() {
     }
   }, [lowMeta.page, lowMeta.limit, lowWarehouseFilter]);
 
-  // Trigger loads based on active tab
+  // Isolated tab triggers (prevent cross-tab effect execution)
   useEffect(() => {
     if (activeTab === 0) fetchStock();
-    else if (activeTab === 1) fetchMovements();
-    else if (activeTab === 2) fetchLowStock();
-  }, [activeTab, fetchStock, fetchMovements, fetchLowStock]);
+  }, [activeTab, fetchStock]);
+
+  useEffect(() => {
+    if (activeTab === 1) fetchMovements();
+  }, [activeTab, fetchMovements]);
+
+  useEffect(() => {
+    if (activeTab === 2) fetchLowStock();
+  }, [activeTab, fetchLowStock]);
 
   // =========================================================================
   // HANDLERS: Availability Check (UC-15)
@@ -616,21 +630,20 @@ export function Inventory() {
       },
     },
     {
+      field: 'referenceType',
+      headerName: 'Reference Type',
+      width: 150,
+      renderCell: (params) => <StatusChip status={params.row.referenceType} />,
+    },
+    {
       field: 'reference',
       headerName: 'Reference / Reason',
       flex: 1.5,
       minWidth: 160,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          {params.row.referenceType && (
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-              {params.row.referenceType.toUpperCase()} {params.row.referenceId ? `#${params.row.referenceId}` : ''}
-            </Typography>
-          )}
-          <Typography variant="body2" sx={{ fontStyle: params.row.reference ? 'normal' : 'italic', color: params.row.reference ? 'text.primary' : 'text.disabled' }}>
-            {params.row.reference || 'No audit note'}
-          </Typography>
-        </Box>
+        <Typography variant="body2" sx={{ fontStyle: params.row.reference ? 'normal' : 'italic', color: params.row.reference ? 'text.primary' : 'text.disabled' }}>
+          {params.row.reference || (params.row.referenceId ? `Ref #${params.row.referenceId}` : 'No audit note')}
+        </Typography>
       ),
     },
     {
@@ -860,6 +873,25 @@ export function Inventory() {
                   ))}
                 </TextField>
 
+                <TextField
+                  select
+                  size="small"
+                  label="Product"
+                  value={stockProductFilter}
+                  onChange={(e) => {
+                    setStockProductFilter(e.target.value);
+                    setStockMeta((prev) => ({ ...prev, page: 1 }));
+                  }}
+                  sx={{ minWidth: 220 }}
+                >
+                  <MenuItem value="">All Products</MenuItem>
+                  {allProducts.map((p) => (
+                    <MenuItem key={p.id} value={p.id}>
+                      {p.name} ({p.sku})
+                    </MenuItem>
+                  ))}
+                </TextField>
+
                 <FormControlLabel
                   control={
                     <Switch
@@ -906,9 +938,16 @@ export function Inventory() {
                 }}
                 pageSizeOptions={[10, 20, 50]}
                 disableRowSelectionOnClick
+                getRowClassName={(params) =>
+                  params.row.quantity <= params.row.reorderLevel ? 'inventory-row-low' : ''
+                }
                 sx={{
                   border: 'none',
                   '& .MuiDataGrid-cell:focus': { outline: 'none' },
+                  '& .inventory-row-low': {
+                    bgcolor: 'rgba(237, 108, 2, 0.08)',
+                    '&:hover': { bgcolor: 'rgba(237, 108, 2, 0.16)' },
+                  },
                 }}
               />
             </Box>
@@ -936,27 +975,26 @@ export function Inventory() {
                   InputProps={{
                     startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />,
                   }}
-                  sx={{ minWidth: 260 }}
+                  sx={{ minWidth: 220 }}
                 />
 
                 <TextField
                   select
                   size="small"
-                  label="Movement Type"
-                  value={movementTypeFilter}
+                  label="Product"
+                  value={movementProductFilter}
                   onChange={(e) => {
-                    setMovementTypeFilter(e.target.value);
+                    setMovementProductFilter(e.target.value);
                     setMovementMeta((prev) => ({ ...prev, page: 1 }));
                   }}
-                  sx={{ minWidth: 180 }}
+                  sx={{ minWidth: 200 }}
                 >
-                  <MenuItem value="">All Movement Types</MenuItem>
-                  <MenuItem value="in">Inbound (in)</MenuItem>
-                  <MenuItem value="out">Outbound (out)</MenuItem>
-                  <MenuItem value="adjustment">Cycle Adjustment</MenuItem>
-                  <MenuItem value="transfer">Warehouse Transfer</MenuItem>
-                  <MenuItem value="purchase_order">Purchase Order Receipt</MenuItem>
-                  <MenuItem value="sales_order">Sales Order Fulfillment</MenuItem>
+                  <MenuItem value="">All Products</MenuItem>
+                  {allProducts.map((p) => (
+                    <MenuItem key={p.id} value={p.id}>
+                      {p.name} ({p.sku})
+                    </MenuItem>
+                  ))}
                 </TextField>
 
                 <TextField
@@ -968,7 +1006,7 @@ export function Inventory() {
                     setMovementWarehouseFilter(e.target.value);
                     setMovementMeta((prev) => ({ ...prev, page: 1 }));
                   }}
-                  sx={{ minWidth: 200 }}
+                  sx={{ minWidth: 180 }}
                 >
                   <MenuItem value="">All Warehouses</MenuItem>
                   {allWarehouses.map((wh) => (
@@ -977,6 +1015,49 @@ export function Inventory() {
                     </MenuItem>
                   ))}
                 </TextField>
+
+                <TextField
+                  select
+                  size="small"
+                  label="Movement Type"
+                  value={movementTypeFilter}
+                  onChange={(e) => {
+                    setMovementTypeFilter(e.target.value);
+                    setMovementMeta((prev) => ({ ...prev, page: 1 }));
+                  }}
+                  sx={{ minWidth: 160 }}
+                >
+                  <MenuItem value="">All Movement Types</MenuItem>
+                  <MenuItem value="in">Inbound (in)</MenuItem>
+                  <MenuItem value="out">Outbound (out)</MenuItem>
+                  <MenuItem value="adjustment">Cycle Adjustment</MenuItem>
+                </TextField>
+
+                <TextField
+                  size="small"
+                  type="date"
+                  label="Start Date"
+                  value={movementStartDate}
+                  onChange={(e) => {
+                    setMovementStartDate(e.target.value);
+                    setMovementMeta((prev) => ({ ...prev, page: 1 }));
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ width: 145 }}
+                />
+
+                <TextField
+                  size="small"
+                  type="date"
+                  label="End Date"
+                  value={movementEndDate}
+                  onChange={(e) => {
+                    setMovementEndDate(e.target.value);
+                    setMovementMeta((prev) => ({ ...prev, page: 1 }));
+                  }}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ width: 145 }}
+                />
 
                 <Box sx={{ ml: 'auto' }}>
                   <Typography variant="caption" color="text.secondary">

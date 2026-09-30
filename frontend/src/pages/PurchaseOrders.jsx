@@ -928,7 +928,11 @@ export function PurchaseOrders() {
       <ConfirmDialog
         open={receiveConfirmOpen}
         title="Receive Purchase Order Goods (UC-27)"
-        message="Are you sure you want to receive this shipment? All line item quantities will be atomically credited to warehouse physical stock, and stock movements will be recorded."
+        message={`Are you sure you want to receive this order? This adds stock to ${
+          rows.find((r) => r.id === receiveTargetId)?.warehouseName ||
+          selectedPO?.warehouseName ||
+          'the destination warehouse'
+        } and cannot be undone.`}
         confirmText="Confirm Receipt & Restock"
         confirmColor="success"
         loading={receiveLoading}

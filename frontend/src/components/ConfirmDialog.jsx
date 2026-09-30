@@ -12,6 +12,7 @@ export function ConfirmDialog({
   open,
   title = 'Confirm Action',
   content,
+  message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   confirmColor = 'primary',
@@ -19,20 +20,24 @@ export function ConfirmDialog({
   error = null,
   onConfirm,
   onClose,
+  onCancel,
 }) {
+  const handleClose = onClose || onCancel;
+  const dialogText = content || message;
+
   return (
-    <Dialog open={open} onClose={loading ? undefined : onClose} maxWidth="xs" fullWidth>
+    <Dialog open={open} onClose={loading ? undefined : handleClose} maxWidth="xs" fullWidth>
       <DialogTitle fontWeight={600}>{title}</DialogTitle>
       <DialogContent>
         {error && <ErrorAlert error={error} sx={{ mb: 2 }} />}
-        {typeof content === 'string' ? (
-          <DialogContentText color="text.secondary">{content}</DialogContentText>
+        {typeof dialogText === 'string' ? (
+          <DialogContentText color="text.secondary">{dialogText}</DialogContentText>
         ) : (
-          content
+          dialogText
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onClose} disabled={loading} color="inherit">
+        <Button onClick={handleClose} disabled={loading} color="inherit">
           {cancelText}
         </Button>
         <Button

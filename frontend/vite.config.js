@@ -15,6 +15,29 @@ export default defineConfig({
     },
   },
   build: {
-    minify: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@mui/x-data-grid')) {
+              return 'vendor-datagrid';
+            }
+            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-vendor')) {
+              return 'vendor-recharts';
+            }
+            if (id.includes('@mui') || id.includes('@emotion')) {
+              return 'vendor-mui';
+            }
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('axios') || id.includes('dayjs')) {
+              return 'vendor-utils';
+            }
+            return 'vendor';
+          }
+        },
+      },
+    },
   },
 });
