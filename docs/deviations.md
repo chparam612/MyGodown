@@ -127,3 +127,37 @@ This document records deliberate design decisions, deviations from initial defau
   - When `unitCost` is omitted from a line item at creation, the system automatically defaults `unitCost` to the product's current catalog `costPrice`.
   - **Known Risk:** If the product's catalog `costPrice` is modified later, PO history will not reflect the actual agreed supplier procurement price unless `unitCost` was explicitly provided in the request payload.
 
+---
+
+## 9. Diagnostic Scripts & Test Artifacts (Phase 3 & 4 Maintenance)
+
+### 9.1 Untracked Phase 3 Evidence Scripts in `backend/scripts/`
+- **Context:**
+  - During Phase 3 verification (Steps 4, 5, 6.A, 6.B, 7), 5 diagnostic Node scripts and their terminal capture files were created to execute and record real network calls against `inventory_db`:
+    - `backend/scripts/runLiveStep4Evidence.js` & `backend/scripts/step4_evidence.txt`
+    - `backend/scripts/runLiveStep5Evidence.js` & `backend/scripts/step5_evidence.txt`
+    - `backend/scripts/runLiveStep6aEvidence.js` & `backend/scripts/step6a_evidence.txt`
+    - `backend/scripts/runLiveStep6bEvidence.js` & `backend/scripts/step6b_evidence.txt`
+    - `backend/scripts/runLiveStep7Evidence.js` & `backend/scripts/step7_evidence.txt`
+  - These files are diagnostic verification tools rather than shipped runtime product code.
+- **Pending Decision (Final Report):**
+  - Tracked as an open repository hygiene item to be formally decided with the user at the conclusion of Phase 4:
+    1. Option A: Delete diagnostic scripts and text logs from working directory.
+    2. Option B: Retain them in `backend/scripts/` as permanent offline test documentation.
+    3. Option C: Add `scripts/*Evidence.js` and `scripts/*_evidence.txt` to `.gitignore`.
+
+### 9.2 Resolution of Dangling Phase 3 Sales Order Test Fixtures
+- **Context:**
+  - Prior to Phase 4 Step 4 testing, a baseline inspection of `inventory_db` revealed `openPurchaseOrders: 0` but `openSalesOrders: 4`.
+  - Detailed query of `GET /api/sales-orders?status=draft` and `GET /api/sales-orders?status=confirmed` identified 4 leftover test fixtures from Phase 3 Step 6.B verification (created at 2026-09-30 10:22:20):
+    - `SO #9` (`SO-20260930-3059`): Draft test order created under Warehouse Manager role.
+    - `SO #10` (`SO-20260930-2907`): Draft test order created under Administrator role.
+    - `SO #11` (`SO-20260930-8073`): Confirmed test order created to verify multi-line shortage rollback.
+    - `SO #13` (`SO-20260930-9503`): Draft test order created to test patch cancellation.
+- **Resolution:**
+  - All 4 orders were non-terminal test fixtures. Each was cleanly transitioned to terminal status `cancelled` via the standard REST endpoint (`POST /api/sales-orders/:id/cancel`) by the Administrator account.
+  - Zero inventory stock was mutated (cancellation leaves stock untouched by design).
+  - Dashboard `openSalesOrders` KPI successfully reset to **0**, restoring a completely clean operational baseline for Phase 4 Step 4 testing.
+
+
+
