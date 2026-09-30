@@ -118,5 +118,48 @@ All endpoints reside under the `/api` prefix and require a valid Bearer token in
 
 - **[API Contract Document](docs/api-contract.md)**: The authoritative REST contract for frontend development containing complete schemas, validation rules, state machines, and real verified responses.
 - **[Traceability & Coverage Matrix](docs/coverage.md)**: Full requirements traceability mapping UC-01 through UC-32 to source code and Jest tests.
+- **[Frontend Coverage Document](docs/frontend-coverage.md)**: Full frontend use case implementation and verification matrix.
 - **[Project Deviations & Architecture Notes](docs/deviations.md)**: Explicit records of deliberate design decisions, immutability rules, and BR-05/BR-07/BR-08 guards.
 - **[API Test Requests (`docs/api-tests/`)](docs/api-tests/)**: Pre-configured, runnable `.http` files compatible with VS Code REST Client, Thunder Client, and IntelliJ.
+
+---
+
+## 8. Frontend Setup (Phase 3)
+
+The user interface is an enterprise single-page application built with **React (JavaScript)**, **Vite**, and **Material UI (MUI)**.
+
+### Prerequisites & Installation
+```bash
+cd frontend
+npm install
+```
+
+### Environment Configuration
+The frontend communicates with the backend via a reverse-proxy configured in Vite:
+```bash
+# In frontend/
+cp .env.example .env
+```
+Default `.env` configuration:
+```env
+VITE_API_BASE_URL=/api
+```
+
+### Running the Development Server
+```bash
+npm run dev
+```
+The Vite development server boots on **`http://localhost:5173`**. Requests matching `/api/*` are automatically proxied to the backend REST service at `http://localhost:5000`.
+
+### Production Build & Linting
+```bash
+npm run build    # Compiles client bundles into frontend/dist/
+npm run lint     # Validates code quality and rules via oxlint
+```
+
+### Authentication & Demo Logins
+Login at `http://localhost:5173/login`. Available demo accounts (passwords documented in Section 4):
+- **Administrator:** `admin@mygodown.com`
+- **Warehouse Manager:** `manager@mygodown.com`
+- **Inventory Staff:** `staff@mygodown.com`
+

@@ -88,16 +88,19 @@ All API endpoints adhere strictly to standardized JSON response envelopes.
 - `staff`: Frontline inventory operations, viewing active catalog, checking availability, creating draft sales orders, confirming and fulfilling sales orders. Cannot view product cost prices (`costPrice`) or dashboard stock valuation (`stockValue`).
 
 ### 2.2 Movement Types (`movement_type`)
-- `in`: Inbound physical stock receipt (e.g., PO receipt, manual inward).
-- `out`: Outbound stock dispatch (e.g., sales order fulfillment, scrap).
-- `transfer`: Inter-warehouse stock redistribution.
-- `adjustment`: Reconciliation delta resulting from cycle counts or physical stock audits.
+Database schema ENUM: `'in'`, `'out'`, `'adjustment'`.
+- `in`: Inbound physical stock receipt (e.g., PO receipt, manual inward receipt, transfer into destination warehouse).
+- `out`: Outbound stock dispatch (e.g., sales order fulfillment, scrap, manual outward dispatch, transfer out of source warehouse).
+- `adjustment`: Reconciliation delta resulting from cycle counts or physical stock audits (positive or negative delta).
 
 ### 2.3 Reference Types (`reference_type`)
-- `po`: Linked to Purchase Order.
-- `so`: Linked to Sales Order.
-- `adjustment`: Stock count adjustment.
-- `transfer`: Warehouse stock transfer.
+Column format: `VARCHAR(50) DEFAULT NULL`. Values written by application services:
+- `manual`: Direct manual stock in/out (`POST /api/inventory/movements`, UC-16). `reference_id` is `null`.
+- `adjustment`: Stock cycle count / physical audit adjustment (`POST /api/inventory/adjust`, UC-17). `reference_id` is `null`.
+- `transfer`: Inter-warehouse stock transfer (`POST /api/inventory/transfer`, UC-18). `reference_id` links paired movements to the source movement ID.
+- `purchase_order`: Inbound purchase order receipt (`POST /api/purchase-orders/:id/receive`, UC-27). `reference_id` points to `purchase_orders.id`.
+- `sales_order`: Outbound sales order fulfillment (`POST /api/sales-orders/:id/fulfill`, UC-30). `reference_id` points to `sales_orders.id`.
+- `null`: Initial baseline stock seeded during initial migration (`seed.sql`).
 
 ### 2.4 Purchase Order Statuses (`status`)
 - `draft`: Initial order editable by Admin/Manager. No stock affected.
@@ -400,7 +403,7 @@ All API endpoints adhere strictly to standardized JSON response envelopes.
 #### `POST /api/purchase-orders/:id/receive` (UC-27)
 - **Roles:** `admin`, `manager`
 - **Guards:** PO must be in `ordered` status (409 Conflict if `draft`, `received`, or `cancelled`).
-- **Atomicity:** In ONE ACID database transaction: updates PO status to `received`, increments physical warehouse stock for all items, and records `in` stock movements with `reference_type = 'po'`. Double-receive is impossible.
+- **Atomicity:** In ONE ACID database transaction: updates PO status to `received`, increments physical warehouse stock for all items, and records `in` stock movements with `reference_type = 'purchase_order'`. Double-receive is impossible.
 
 #### `POST /api/purchase-orders/:id/cancel` (UC-27)
 - **Roles:** `admin`, `manager`
@@ -447,7 +450,7 @@ All API endpoints adhere strictly to standardized JSON response envelopes.
 - **Roles:** `admin`, `manager`, `staff`
 - **Guards:** SO must be in `confirmed` status (409 Conflict if `draft`, `fulfilled`, or `cancelled`).
 - **Shortage Atomicity Guard:** If ANY item lacks sufficient physical stock in the warehouse, the entire operation is rejected with HTTP `422 Unprocessable Entity` (`InsufficientStockError`), rolling back completely with ZERO partial deductions.
-- **Atomicity:** In ONE transaction: updates SO status to `fulfilled`, decrements physical stock for all items, and writes `out` movements. Double-fulfillment is blocked.
+- **Atomicity:** In ONE transaction: updates SO status to `fulfilled`, decrements physical stock for all items, and writes `out` movements with `reference_type = 'sales_order'`. Double-fulfillment is blocked.
 
 #### `POST /api/sales-orders/:id/cancel` (UC-30)
 - **Roles:** `admin`, `manager` only (**Staff receives 403 Forbidden**)
