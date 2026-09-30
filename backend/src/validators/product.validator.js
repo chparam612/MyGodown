@@ -29,18 +29,21 @@ export const createProductSchema = Joi.object({
   category: Joi.string().trim().max(100).default('General').messages({
     'string.max': 'Category cannot exceed 100 characters',
   }),
-  unitPrice: Joi.number().precision(2).min(0).required().messages({
+  unitPrice: Joi.number().precision(2).min(0).max(99999999.99).required().messages({
     'number.base': 'Unit price must be a valid number',
     'number.min': 'Unit price cannot be negative',
+    'number.max': 'Unit price cannot exceed 99,999,999.99',
     'any.required': 'Unit price is required',
   }),
-  costPrice: Joi.number().precision(2).min(0).default(0.00).messages({
+  costPrice: Joi.number().precision(2).min(0).max(99999999.99).default(0.00).messages({
     'number.base': 'Cost price must be a valid number',
     'number.min': 'Cost price cannot be negative',
+    'number.max': 'Cost price cannot exceed 99,999,999.99',
   }),
-  reorderLevel: Joi.number().integer().min(0).default(0).messages({
+  reorderLevel: Joi.number().integer().min(0).max(1000000).default(0).messages({
     'number.base': 'Reorder level must be an integer',
     'number.min': 'Reorder level cannot be negative',
+    'number.max': 'Reorder level cannot exceed 1,000,000',
   }),
   supplierId: Joi.number().integer().positive().required().messages({
     'number.base': 'Supplier ID must be a positive integer',
@@ -59,14 +62,17 @@ export const updateProductSchema = Joi.object({
   }),
   description: Joi.string().trim().allow('', null).optional(),
   category: Joi.string().trim().max(100).optional(),
-  unitPrice: Joi.number().precision(2).min(0).optional().messages({
+  unitPrice: Joi.number().precision(2).min(0).max(99999999.99).optional().messages({
     'number.min': 'Unit price cannot be negative',
+    'number.max': 'Unit price cannot exceed 99,999,999.99',
   }),
-  costPrice: Joi.number().precision(2).min(0).optional().messages({
+  costPrice: Joi.number().precision(2).min(0).max(99999999.99).optional().messages({
     'number.min': 'Cost price cannot be negative',
+    'number.max': 'Cost price cannot exceed 99,999,999.99',
   }),
-  reorderLevel: Joi.number().integer().min(0).optional().messages({
+  reorderLevel: Joi.number().integer().min(0).max(1000000).optional().messages({
     'number.min': 'Reorder level cannot be negative',
+    'number.max': 'Reorder level cannot exceed 1,000,000',
   }),
   supplierId: Joi.number().integer().positive().optional().messages({
     'number.positive': 'Supplier ID must be a positive integer',

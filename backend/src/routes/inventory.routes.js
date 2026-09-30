@@ -56,9 +56,10 @@ router.get(
   asyncHandler((req, res) => inventoryController.listMovements(req, res))
 );
 
-// UC-16: Record Stock Movement (All authenticated roles: Admin, Manager, Staff)
+// UC-16: Record Stock Movement (Admin & Manager only; Staff gets 403)
 router.post(
   '/movements',
+  authorize(ROLES.ADMIN, ROLES.MANAGER),
   validate({ body: recordMovementSchema }),
   asyncHandler((req, res) => inventoryController.recordMovement(req, res))
 );

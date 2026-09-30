@@ -12,17 +12,20 @@ import Joi from 'joi';
 const soItemSchema = Joi.object({
   productId: Joi.number().integer().positive(),
   product_id: Joi.number().integer().positive(),
-  quantity: Joi.number().integer().positive().required().messages({
+  quantity: Joi.number().integer().positive().max(1000000).required().messages({
     'number.base': 'Item quantity must be a number',
     'number.integer': 'Item quantity must be an integer',
     'number.positive': 'Item quantity must be greater than zero',
+    'number.max': 'Item quantity cannot exceed 1,000,000',
     'any.required': 'Item quantity is required',
   }),
-  unitPrice: Joi.number().min(0).precision(2).allow(null).messages({
+  unitPrice: Joi.number().min(0).max(99999999.99).precision(2).allow(null).messages({
     'number.min': 'Item unit price cannot be negative',
+    'number.max': 'Item unit price cannot exceed 99,999,999.99',
   }),
-  unit_price: Joi.number().min(0).precision(2).allow(null).messages({
+  unit_price: Joi.number().min(0).max(99999999.99).precision(2).allow(null).messages({
     'number.min': 'Item unit price cannot be negative',
+    'number.max': 'Item unit price cannot exceed 99,999,999.99',
   }),
 }).xor('productId', 'product_id').messages({
   'object.missing': 'Each line item must specify productId or product_id',

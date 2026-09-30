@@ -23,9 +23,10 @@ export const adjustStockSchema = Joi.object({
     'number.positive': 'Warehouse ID must be a positive integer',
     'any.required': 'Warehouse ID is required',
   }),
-  countedQuantity: Joi.number().integer().min(0).required().messages({
+  countedQuantity: Joi.number().integer().min(0).max(1000000).required().messages({
     'number.base': 'Counted quantity must be a valid number',
     'number.min': 'Counted quantity cannot be negative',
+    'number.max': 'Counted quantity cannot exceed 1,000,000',
     'any.required': 'Counted quantity is required',
   }),
   reason: Joi.string().trim().min(3).max(255).required().messages({
@@ -55,10 +56,11 @@ export const transferStockSchema = Joi.object({
     'number.positive': 'Destination warehouse ID must be a positive integer',
     'any.required': 'Destination warehouse ID is required',
   }),
-  quantity: Joi.number().integer().positive().min(1).required().messages({
+  quantity: Joi.number().integer().positive().min(1).max(1000000).required().messages({
     'number.base': 'Transfer quantity must be a valid number',
     'number.positive': 'Transfer quantity must be greater than zero',
     'number.min': 'Transfer quantity must be at least 1',
+    'number.max': 'Transfer quantity cannot exceed 1,000,000',
     'any.required': 'Transfer quantity is required',
   }),
   reason: Joi.string().trim().max(255).allow(null, '').optional(),
@@ -83,10 +85,11 @@ export const recordMovementSchema = Joi.object({
     'any.only': 'Movement type must be one of: in, out, adjustment',
     'any.required': 'Movement type is required',
   }),
-  quantity: Joi.number().integer().positive().min(1).required().messages({
+  quantity: Joi.number().integer().positive().min(1).max(1000000).required().messages({
     'number.base': 'Movement quantity must be a valid number',
     'number.positive': 'Movement quantity must be greater than zero',
     'number.min': 'Movement quantity must be at least 1',
+    'number.max': 'Movement quantity cannot exceed 1,000,000',
     'any.required': 'Movement quantity is required',
   }),
   reference: Joi.string().trim().max(100).allow(null, '').optional(),
@@ -102,9 +105,10 @@ export const checkAvailabilityQuerySchema = Joi.object({
     'any.required': 'Product ID is required',
   }),
   warehouseId: Joi.number().integer().positive().optional(),
-  quantity: Joi.number().integer().positive().min(1).optional().messages({
+  quantity: Joi.number().integer().positive().min(1).max(1000000).optional().messages({
     'number.base': 'Quantity must be a valid number',
     'number.positive': 'Quantity must be greater than zero',
+    'number.max': 'Quantity cannot exceed 1,000,000',
   }),
 });
 

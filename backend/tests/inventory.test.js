@@ -185,6 +185,23 @@ describe('Module 4: Inventory & Stock Movements (UC-14 to UC-20)', () => {
       const finalStock = afterCheck.body.data.warehouses.find((w) => w.warehouseId === 1)?.quantity || 0;
       expect(finalStock).toBe(initialStock + 25);
     });
+
+    test('Staff role is denied recording stock movements (403 Forbidden)', async () => {
+      const res = await request(app)
+        .post('/api/inventory/movements')
+        .set('Authorization', `Bearer ${staffToken}`)
+        .send({
+          productId: 1,
+          warehouseId: 1,
+          movementType: 'in',
+          quantity: 10,
+          reference: 'STAFF-BYPASS-ATTEMPT',
+        });
+
+      expect(res.status).toBe(403);
+      expect(res.body.success).toBe(false);
+      expect(res.body.error.code).toBe('FORBIDDEN');
+    });
   });
 
   // --------------------------------------------------------------------------

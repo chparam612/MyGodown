@@ -33,8 +33,9 @@ export const createSupplierSchema = Joi.object({
     'string.base': 'Phone must be a string',
     'string.max': 'Phone must not exceed 50 characters',
   }),
-  address: Joi.string().trim().allow(null, '').optional().messages({
+  address: Joi.string().trim().max(255).allow(null, '').optional().messages({
     'string.base': 'Address must be a string',
+    'string.max': 'Address must not exceed 255 characters',
   }),
   isActive: Joi.boolean().default(true).optional(),
   is_active: Joi.boolean().optional(),
@@ -66,7 +67,10 @@ export const updateSupplierSchema = Joi.object({
     'string.max': 'Email must not exceed 150 characters',
   }),
   phone: Joi.string().trim().max(50).allow(null, '').optional(),
-  address: Joi.string().trim().allow(null, '').optional(),
+  address: Joi.string().trim().max(255).allow(null, '').optional().messages({
+    'string.base': 'Address must be a string',
+    'string.max': 'Address must not exceed 255 characters',
+  }),
   isActive: Joi.boolean().optional(),
   is_active: Joi.boolean().optional(),
 })
