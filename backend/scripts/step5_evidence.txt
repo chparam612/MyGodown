@@ -1,0 +1,789 @@
+
+================================================================================
+### 1.1 Admin Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "admin@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzkwNzQxNTc4LCJleHAiOjE3OTA4Mjc5Nzh9.Dz5pYwzgcs_qdR6mMK5f6AmaWZURgUOtId1vcMCMGz4",
+    "user": {
+      "id": 1,
+      "name": "System Administrator",
+      "email": "admin@mygodown.com",
+      "role": "admin",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 1.2 Warehouse Manager Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "manager@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6Im1hbmFnZXIiLCJpYXQiOjE3OTA3NDE1NzgsImV4cCI6MTc5MDgyNzk3OH0.0D0SU3Lr1CPFSFLoV3BHDikndQfvVUeyn3ZOo6lFUhM",
+    "user": {
+      "id": 2,
+      "name": "Warehouse Manager",
+      "email": "manager@mygodown.com",
+      "role": "manager",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 1.3 Warehouse Staff Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "staff@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywicm9sZSI6InN0YWZmIiwiaWF0IjoxNzkwNzQxNTc4LCJleHAiOjE3OTA4Mjc5Nzh9.bVylA2pA4SypJyLCpkwAzYB1HB1tJWQAobUobo6AHQ0",
+    "user": {
+      "id": 3,
+      "name": "Inventory Staff",
+      "email": "staff@mygodown.com",
+      "role": "staff",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 2.1 UC-16: Successful Inbound Stock Movement (Admin)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/movements
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "movementType": "in",
+  "quantity": 12,
+  "reference": "PO Inbound Receiving Dock Dock-3"
+}
+
+RESPONSE:
+HTTP/1.1 201
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "movementId": 72,
+    "productId": 1,
+    "warehouseId": 1,
+    "previousStock": 67,
+    "newStock": 79,
+    "quantity": 12,
+    "movementType": "in",
+    "reference": "PO Inbound Receiving Dock Dock-3"
+  }
+}
+
+================================================================================
+### 2.2 UC-16: 422 Insufficient Stock Movement Rejection (Staff)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/movements
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "movementType": "out",
+  "quantity": 999999,
+  "reference": "Excess withdrawal test"
+}
+
+RESPONSE:
+HTTP/1.1 422
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "INSUFFICIENT_STOCK",
+    "message": "Insufficient stock available for this operation. Requested: 999999, Available: 79"
+  }
+}
+
+================================================================================
+### 3.1 UC-17: Successful Physical Stock Adjustment (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/adjust
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "countedQuantity": 65,
+  "reason": "Q3 Physical Cycle Count Audit Reconciled"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "movementId": 73,
+    "productId": 1,
+    "warehouseId": 1,
+    "previousQuantity": 79,
+    "countedQuantity": 65,
+    "delta": -14,
+    "reason": "Q3 Physical Cycle Count Audit Reconciled"
+  }
+}
+
+================================================================================
+### 3.2 UC-17: 400 Bad Request - Reason Too Short (<3 chars) (Admin)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/adjust
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "countedQuantity": 65,
+  "reason": "ok"
+}
+
+RESPONSE:
+HTTP/1.1 400
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": [
+      {
+        "target": "body",
+        "field": "reason",
+        "message": "Adjustment reason must be at least 3 characters long"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 3.3 UC-17: 403 Forbidden - Staff Direct Adjustment Attempt
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/adjust
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "warehouseId": 1,
+  "countedQuantity": 100,
+  "reason": "Unauthorized staff adjustment attempt"
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 4.1 UC-18: Successful Inter-Warehouse Transfer (Admin)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/transfer
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 2,
+  "quantity": 5,
+  "reason": "Stock replenishment for regional hub"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "productId": 1,
+    "sourceWarehouseId": 1,
+    "destinationWarehouseId": 2,
+    "quantity": 5,
+    "transferReference": "TRF-1790741578941-DSIZ9",
+    "sourceRemainingStock": 60,
+    "destinationNewStock": 45,
+    "sourceMovementId": 74,
+    "destinationMovementId": 75,
+    "notes": "Stock replenishment for regional hub"
+  }
+}
+
+================================================================================
+### 4.2 UC-18: 400 Bad Request - Same Source & Destination Warehouse (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/transfer
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 1,
+  "quantity": 5,
+  "reason": "Invalid same warehouse transfer"
+}
+
+RESPONSE:
+HTTP/1.1 400
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Source and destination warehouses cannot be the same"
+  }
+}
+
+================================================================================
+### 4.3 UC-18: 422 Unprocessable Entity - Inactive Destination Warehouse (Admin)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/transfer
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 22,
+  "quantity": 5,
+  "reason": "Transfer to decommissioned warehouse"
+}
+
+RESPONSE:
+HTTP/1.1 422
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "UNPROCESSABLE_ENTITY",
+    "message": "Cannot transfer stock to inactive warehouse 'Midwest Regional Logistics Hub (Expanded)'"
+  }
+}
+
+================================================================================
+### 4.4 UC-18: 422 Unprocessable Entity - Insufficient Stock for Transfer (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/transfer
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 2,
+  "quantity": 999999,
+  "reason": "Excess transfer attempt"
+}
+
+RESPONSE:
+HTTP/1.1 422
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "INSUFFICIENT_STOCK",
+    "message": "Insufficient stock in source warehouse 'Central Logistics Hub' for transfer. Available: 60, Requested: 999999"
+  }
+}
+
+================================================================================
+### 4.5 UC-18: 403 Forbidden - Staff Direct Transfer Attempt
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5005/api/inventory/transfer
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "sourceWarehouseId": 1,
+  "destinationWarehouseId": 2,
+  "quantity": 2,
+  "reason": "Staff unauthorized transfer"
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 5.1 UC-15: Check Stock Availability Query (Staff)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5005/api/inventory/availability?productId=1&quantity=10
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "productId": 1,
+    "totalQuantity": 105,
+    "warehouses": [
+      {
+        "warehouseId": 1,
+        "warehouseName": "Central Logistics Hub",
+        "warehouseCode": "WH-CENTRAL",
+        "quantity": 60
+      },
+      {
+        "warehouseId": 2,
+        "warehouseName": "East Coast Distribution Center",
+        "warehouseCode": "WH-EAST",
+        "quantity": 45
+      }
+    ],
+    "requestedQuantity": 10,
+    "isAvailable": true
+  }
+}
+
+================================================================================
+### 6.1 UC-19: Historical Movement Audit Ledger (Staff)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5005/api/inventory/movements?limit=10
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": [
+    {
+      "id": 75,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 2,
+      "warehouseName": "East Coast Distribution Center",
+      "warehouseCode": "WH-EAST",
+      "userId": 1,
+      "userName": "System Administrator",
+      "userRole": "admin",
+      "movementType": "in",
+      "referenceType": "transfer",
+      "referenceId": 74,
+      "quantity": 5,
+      "reference": "TRF-1790741578941-DSIZ9 (Transfer from WH 1: Stock replenishment for regional hub)",
+      "createdAt": "2026-09-30 09:42:58"
+    },
+    {
+      "id": 74,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "userId": 1,
+      "userName": "System Administrator",
+      "userRole": "admin",
+      "movementType": "out",
+      "referenceType": "transfer",
+      "referenceId": 74,
+      "quantity": 5,
+      "reference": "TRF-1790741578941-DSIZ9 (Transfer to WH 2: Stock replenishment for regional hub)",
+      "createdAt": "2026-09-30 09:42:58"
+    },
+    {
+      "id": 73,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "userId": 2,
+      "userName": "Warehouse Manager",
+      "userRole": "manager",
+      "movementType": "adjustment",
+      "referenceType": "adjustment",
+      "referenceId": null,
+      "quantity": -14,
+      "reference": "Q3 Physical Cycle Count Audit Reconciled",
+      "createdAt": "2026-09-30 09:42:58"
+    },
+    {
+      "id": 72,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "userId": 1,
+      "userName": "System Administrator",
+      "userRole": "admin",
+      "movementType": "in",
+      "referenceType": "manual",
+      "referenceId": null,
+      "quantity": 12,
+      "reference": "PO Inbound Receiving Dock Dock-3",
+      "createdAt": "2026-09-30 09:42:58"
+    },
+    {
+      "id": 71,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 2,
+      "warehouseName": "East Coast Distribution Center",
+      "warehouseCode": "WH-EAST",
+      "userId": 1,
+      "userName": "System Administrator",
+      "userRole": "admin",
+      "movementType": "in",
+      "referenceType": "transfer",
+      "referenceId": 70,
+      "quantity": 5,
+      "reference": "TRF-1790741525906-OKN7Z (Transfer from WH 1: Stock replenishment for regional hub)",
+      "createdAt": "2026-09-30 09:42:05"
+    },
+    {
+      "id": 70,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "userId": 1,
+      "userName": "System Administrator",
+      "userRole": "admin",
+      "movementType": "out",
+      "referenceType": "transfer",
+      "referenceId": 70,
+      "quantity": 5,
+      "reference": "TRF-1790741525906-OKN7Z (Transfer to WH 2: Stock replenishment for regional hub)",
+      "createdAt": "2026-09-30 09:42:05"
+    },
+    {
+      "id": 69,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "userId": 1,
+      "userName": "System Administrator",
+      "userRole": "admin",
+      "movementType": "in",
+      "referenceType": "manual",
+      "referenceId": null,
+      "quantity": 12,
+      "reference": "PO Inbound Receiving Dock Dock-3",
+      "createdAt": "2026-09-30 09:42:05"
+    },
+    {
+      "id": 68,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 2,
+      "warehouseName": "East Coast Distribution Center",
+      "warehouseCode": "WH-EAST",
+      "userId": 1,
+      "userName": "System Administrator",
+      "userRole": "admin",
+      "movementType": "in",
+      "referenceType": "transfer",
+      "referenceId": 67,
+      "quantity": 5,
+      "reference": "TRF-1790741483386-PF6UY (Transfer from WH 1: Stock replenishment for regional hub)",
+      "createdAt": "2026-09-30 09:41:23"
+    },
+    {
+      "id": 67,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "userId": 1,
+      "userName": "System Administrator",
+      "userRole": "admin",
+      "movementType": "out",
+      "referenceType": "transfer",
+      "referenceId": 67,
+      "quantity": 5,
+      "reference": "TRF-1790741483386-PF6UY (Transfer to WH 2: Stock replenishment for regional hub)",
+      "createdAt": "2026-09-30 09:41:23"
+    },
+    {
+      "id": 66,
+      "productId": 1,
+      "productName": "Cordless Brushless Drill 18V",
+      "productSku": "TOOL-DRL-001",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "userId": 2,
+      "userName": "Warehouse Manager",
+      "userRole": "manager",
+      "movementType": "adjustment",
+      "referenceType": "adjustment",
+      "referenceId": null,
+      "quantity": -7,
+      "reference": "Q3 Physical Cycle Count Audit Reconciled",
+      "createdAt": "2026-09-30 09:41:23"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 75,
+    "totalPages": 8
+  }
+}
+
+================================================================================
+### 6.2 Reference Type Enum Verification
+--------------------------------------------------------------------------------
+Distinct referenceType values found in live movements data: ["transfer","adjustment","manual"]
+Expected domain enum values: manual, adjustment, transfer, purchase_order, sales_order
+
+================================================================================
+### 7.1 UC-14: Admin Inventory Stock List (Includes costPrice)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5005/api/inventory?limit=3
+Authorization: Bearer <token_admin>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "productId": 1,
+      "sku": "TOOL-DRL-001",
+      "productName": "Cordless Brushless Drill 18V",
+      "category": "Power Tools",
+      "unitPrice": 129.99,
+      "costPrice": 79.5,
+      "reorderLevel": 15,
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "quantity": 60,
+      "updatedAt": "2026-09-30 09:42:58"
+    },
+    {
+      "id": 2,
+      "productId": 2,
+      "sku": "TOOL-SAW-002",
+      "productName": "Circular Saw 7-1/4 Inch 15A",
+      "category": "Power Tools",
+      "unitPrice": 159,
+      "costPrice": 98,
+      "reorderLevel": 12,
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "quantity": 28,
+      "updatedAt": "2026-09-28 15:29:07"
+    },
+    {
+      "id": 3,
+      "productId": 3,
+      "sku": "TOOL-IMP-003",
+      "productName": "Cordless Impact Driver 20V",
+      "category": "Power Tools",
+      "unitPrice": 119.5,
+      "costPrice": 72,
+      "reorderLevel": 15,
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "quantity": 35,
+      "updatedAt": "2026-09-28 15:29:07"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 3,
+    "total": 39,
+    "totalPages": 13
+  }
+}
+
+================================================================================
+### 7.2 UC-14: Staff Inventory Stock List (Masks costPrice)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5005/api/inventory?limit=3
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "productId": 1,
+      "sku": "TOOL-DRL-001",
+      "productName": "Cordless Brushless Drill 18V",
+      "category": "Power Tools",
+      "unitPrice": 129.99,
+      "reorderLevel": 15,
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "quantity": 60,
+      "updatedAt": "2026-09-30 09:42:58"
+    },
+    {
+      "id": 2,
+      "productId": 2,
+      "sku": "TOOL-SAW-002",
+      "productName": "Circular Saw 7-1/4 Inch 15A",
+      "category": "Power Tools",
+      "unitPrice": 159,
+      "reorderLevel": 12,
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "quantity": 28,
+      "updatedAt": "2026-09-28 15:29:07"
+    },
+    {
+      "id": 3,
+      "productId": 3,
+      "sku": "TOOL-IMP-003",
+      "productName": "Cordless Impact Driver 20V",
+      "category": "Power Tools",
+      "unitPrice": 119.5,
+      "reorderLevel": 15,
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "warehouseCode": "WH-CENTRAL",
+      "quantity": 35,
+      "updatedAt": "2026-09-28 15:29:07"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 3,
+    "total": 39,
+    "totalPages": 13
+  }
+}
+
+================================================================================
+### 7.3 Network-Level Key Verification for costPrice (BR-05)
+--------------------------------------------------------------------------------
+Admin record keys: [ id, productId, sku, productName, category, unitPrice, costPrice, reorderLevel, warehouseId, warehouseName, warehouseCode, quantity, updatedAt ]
+Admin has costPrice: true
+Manager record keys: [ id, productId, sku, productName, category, unitPrice, costPrice, reorderLevel, warehouseId, warehouseName, warehouseCode, quantity, updatedAt ]
+Manager has costPrice: true
+Staff record keys: [ id, productId, sku, productName, category, unitPrice, reorderLevel, warehouseId, warehouseName, warehouseCode, quantity, updatedAt ]
+Staff has costPrice: false
+ASSERTION: 'costPrice' in staff record === false
+
+================================================================================
+ALL STEP 5 LIVE VERIFICATIONS COMPLETED SUCCESSFULLY
+================================================================================
+

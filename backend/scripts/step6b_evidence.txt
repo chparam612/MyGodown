@@ -1,0 +1,823 @@
+
+================================================================================
+### 1.1 Admin Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "admin@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzkwNzQzOTQwLCJleHAiOjE3OTA4MzAzNDB9.CvMYDSc1aHBE1Hk6GaRDEUDFCShyFXEAEX2OhjJwqlc",
+    "user": {
+      "id": 1,
+      "name": "System Administrator",
+      "email": "admin@mygodown.com",
+      "role": "admin",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 1.2 Warehouse Manager Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "manager@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6Im1hbmFnZXIiLCJpYXQiOjE3OTA3NDM5NDAsImV4cCI6MTc5MDgzMDM0MH0.iepb7ZWI9u8uK9WSxdVx9uSGh7yfBYOaGWRCSjqfr3Q",
+    "user": {
+      "id": 2,
+      "name": "Warehouse Manager",
+      "email": "manager@mygodown.com",
+      "role": "manager",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 1.3 Warehouse Staff Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "staff@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywicm9sZSI6InN0YWZmIiwiaWF0IjoxNzkwNzQzOTQwLCJleHAiOjE3OTA4MzAzNDB9.cBA1KsGNI6IJpgbSG9dKEDnzI2RCuKSAXQG7VwoajxQ",
+    "user": {
+      "id": 3,
+      "name": "Inventory Staff",
+      "email": "staff@mygodown.com",
+      "role": "staff",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 2.1 UC-28: Staff Creates Sales Order with Duplicate Item Consolidation
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "customerName": "Acme Commercial Contractors",
+  "warehouseId": 1,
+  "notes": "Dock 2 Delivery - Priority Job",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 3,
+      "unitPrice": 129.99
+    },
+    {
+      "productId": 1,
+      "quantity": 2,
+      "unitPrice": 129.99
+    },
+    {
+      "productId": 2,
+      "quantity": 2,
+      "unitPrice": 159.99
+    }
+  ]
+}
+
+RESPONSE:
+HTTP/1.1 201
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 8,
+    "soNumber": "SO-20260930-1985",
+    "customerName": "Acme Commercial Contractors",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "draft",
+    "totalAmount": 969.93,
+    "notes": "Dock 2 Delivery - Priority Job",
+    "createdBy": 3,
+    "createdByName": "Inventory Staff",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 8,
+        "salesOrderId": 8,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 5,
+        "unitPrice": 129.99,
+        "subtotal": 649.95,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      },
+      {
+        "id": 9,
+        "salesOrderId": 8,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 2,
+        "unitPrice": 159.99,
+        "subtotal": 319.98,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 2.2 UC-28: Manager Creates Sales Order
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "customerName": "BuildCorp Industries",
+  "warehouseId": 1,
+  "notes": "Regional Office Order",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 1,
+      "unitPrice": 125
+    }
+  ]
+}
+
+RESPONSE:
+HTTP/1.1 201
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 9,
+    "soNumber": "SO-20260930-3059",
+    "customerName": "BuildCorp Industries",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "draft",
+    "totalAmount": 125,
+    "notes": "Regional Office Order",
+    "createdBy": 2,
+    "createdByName": "Warehouse Manager",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 10,
+        "salesOrderId": 9,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 1,
+        "unitPrice": 125,
+        "subtotal": 125,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 2.3 UC-28: Admin Creates Sales Order
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "customerName": "Prime Infrastructure Ltd",
+  "warehouseId": 1,
+  "notes": "Corporate HQ Project",
+  "items": [
+    {
+      "productId": 2,
+      "quantity": 1,
+      "unitPrice": 155
+    }
+  ]
+}
+
+RESPONSE:
+HTTP/1.1 201
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "soNumber": "SO-20260930-2907",
+    "customerName": "Prime Infrastructure Ltd",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "draft",
+    "totalAmount": 155,
+    "notes": "Corporate HQ Project",
+    "createdBy": 1,
+    "createdByName": "System Administrator",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 11,
+        "salesOrderId": 10,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 1,
+        "unitPrice": 155,
+        "subtotal": 155,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 3.1 UC-29: Staff Lists Sales Orders
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/sales-orders?warehouseId=1&limit=5
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": [
+    {
+      "id": 10,
+      "soNumber": "SO-20260930-2907",
+      "customerName": "Prime Infrastructure Ltd",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "status": "draft",
+      "totalAmount": 155,
+      "notes": "Corporate HQ Project",
+      "createdBy": 1,
+      "createdByName": "System Administrator",
+      "itemCount": 1,
+      "createdAt": "2026-09-30 10:22:20",
+      "updatedAt": "2026-09-30 10:22:20"
+    },
+    {
+      "id": 9,
+      "soNumber": "SO-20260930-3059",
+      "customerName": "BuildCorp Industries",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "status": "draft",
+      "totalAmount": 125,
+      "notes": "Regional Office Order",
+      "createdBy": 2,
+      "createdByName": "Warehouse Manager",
+      "itemCount": 1,
+      "createdAt": "2026-09-30 10:22:20",
+      "updatedAt": "2026-09-30 10:22:20"
+    },
+    {
+      "id": 8,
+      "soNumber": "SO-20260930-1985",
+      "customerName": "Acme Commercial Contractors",
+      "warehouseId": 1,
+      "warehouseName": "Central Logistics Hub",
+      "status": "draft",
+      "totalAmount": 969.93,
+      "notes": "Dock 2 Delivery - Priority Job",
+      "createdBy": 3,
+      "createdByName": "Inventory Staff",
+      "itemCount": 2,
+      "createdAt": "2026-09-30 10:22:20",
+      "updatedAt": "2026-09-30 10:22:20"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 5,
+    "total": 3,
+    "totalPages": 1
+  }
+}
+
+================================================================================
+### 3.2 UC-29: Staff Views SO Detail by ID (Selling Price Snapshot & Subtotals)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/sales-orders/8
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 8,
+    "soNumber": "SO-20260930-1985",
+    "customerName": "Acme Commercial Contractors",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "draft",
+    "totalAmount": 969.93,
+    "notes": "Dock 2 Delivery - Priority Job",
+    "createdBy": 3,
+    "createdByName": "Inventory Staff",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 8,
+        "salesOrderId": 8,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 5,
+        "unitPrice": 129.99,
+        "subtotal": 649.95,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      },
+      {
+        "id": 9,
+        "salesOrderId": 8,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 2,
+        "unitPrice": 159.99,
+        "subtotal": 319.98,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 3.3 UC-29: Manager Views SO Detail by ID
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/sales-orders/8
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 8,
+    "soNumber": "SO-20260930-1985",
+    "customerName": "Acme Commercial Contractors",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "draft",
+    "totalAmount": 969.93,
+    "notes": "Dock 2 Delivery - Priority Job",
+    "createdBy": 3,
+    "createdByName": "Inventory Staff",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 8,
+        "salesOrderId": 8,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 5,
+        "unitPrice": 129.99,
+        "subtotal": 649.95,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      },
+      {
+        "id": 9,
+        "salesOrderId": 8,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 2,
+        "unitPrice": 159.99,
+        "subtotal": 319.98,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 4.1 Stock Level Pre-Check (Before SO Confirmation)
+--------------------------------------------------------------------------------
+Product 1 (TOOL-DRL-001) in WH 1 Initial Stock: 68 units
+Product 2 (TOOL-SAW-002) in WH 1 Initial Stock: 32 units
+
+================================================================================
+### 4.2 UC-30: Staff Confirms Sales Order (draft -> confirmed)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/8/confirm
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 8,
+    "soNumber": "SO-20260930-1985",
+    "customerName": "Acme Commercial Contractors",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "confirmed",
+    "totalAmount": 969.93,
+    "notes": "Dock 2 Delivery - Priority Job",
+    "createdBy": 3,
+    "createdByName": "Inventory Staff",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 8,
+        "salesOrderId": 8,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 5,
+        "unitPrice": 129.99,
+        "subtotal": 649.95,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      },
+      {
+        "id": 9,
+        "salesOrderId": 8,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 2,
+        "unitPrice": 159.99,
+        "subtotal": 319.98,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 4.3 Stock Level Check After Confirmation (Zero Stock Change Verified)
+--------------------------------------------------------------------------------
+Product 1 in WH 1: Before = 68, After Confirm = 68 (Delta: 0)
+Product 2 in WH 1: Before = 32, After Confirm = 32 (Delta: 0)
+PROVEN: Confirming Sales Order Does NOT Touch Stock: true
+
+================================================================================
+### 5.1 UC-30: Staff Fulfills Sales Order (confirmed -> fulfilled)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/8/fulfill
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 8,
+    "soNumber": "SO-20260930-1985",
+    "customerName": "Acme Commercial Contractors",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "fulfilled",
+    "totalAmount": 969.93,
+    "notes": "Dock 2 Delivery - Priority Job",
+    "createdBy": 3,
+    "createdByName": "Inventory Staff",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 8,
+        "salesOrderId": 8,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 5,
+        "unitPrice": 129.99,
+        "subtotal": 649.95,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      },
+      {
+        "id": 9,
+        "salesOrderId": 8,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 2,
+        "unitPrice": 159.99,
+        "subtotal": 319.98,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 5.2 Stock Level Check After Fulfillment (Expected -5 and -2 Units)
+--------------------------------------------------------------------------------
+Product 1 in WH 1: 68 -> 63 (Delta: -5) [Expected: -5]
+Product 2 in WH 1: 32 -> 30 (Delta: -2) [Expected: -2]
+PROVEN: Fulfill Exactly Deducted Stock: true
+
+================================================================================
+### 6.1 UC-30: Double-Fulfillment Attempt (Expected 409 Conflict)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/8/fulfill
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 409
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "CONFLICT",
+    "message": "Sales order has already been fulfilled"
+  }
+}
+
+================================================================================
+### 6.2 Stock Level Check After 2nd Fulfillment Attempt (Stock Invariance Proof)
+--------------------------------------------------------------------------------
+Product 1 in WH 1: After 1st Fulfill = 63, After 2nd Attempt = 63
+Product 2 in WH 1: After 1st Fulfill = 30, After 2nd Attempt = 30
+PROVEN: Product 1 Stock Unchanged: true
+PROVEN: Product 2 Stock Unchanged: true
+
+================================================================================
+### 7.1 Stock Pre-Check for Shortage Test (Product 9 Current Stock: 8 units)
+--------------------------------------------------------------------------------
+
+================================================================================
+### 7.2 UC-30: Fulfill Order with Shortage (Expected 422 INSUFFICIENT_STOCK)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/11/fulfill
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 422
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "INSUFFICIENT_STOCK",
+    "message": "Insufficient stock for product ID 9 in warehouse ID 1. Required: 13, Available: 8"
+  }
+}
+
+================================================================================
+### 7.3 Stock Invariance Check After 422 Shortage Rejection (Atomic Rollback)
+--------------------------------------------------------------------------------
+Product 9 in WH 1: Before = 8, After Failed Fulfill = 8 (Unchanged: true)
+Product 1 in WH 1: Before = 63, After Failed Fulfill = 63 (Unchanged: true)
+PROVEN: Zero Partial Stock Deduction on Shortage: true
+
+================================================================================
+### 8.1 UC-30: Staff DENIED Cancelling Draft SO via POST /:id/cancel (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/12/cancel
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 8.2 UC-30: Staff DENIED Cancelling Draft SO via PATCH /:id/status (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+PATCH http://localhost:5000/api/sales-orders/13/status
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "status": "cancelled"
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Staff users are not permitted to cancel sales orders"
+  }
+}
+
+================================================================================
+### 8.3 UC-30: Staff DENIED Cancelling Confirmed SO via POST /:id/cancel (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/14/cancel
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 8.4 UC-30: Manager Cancels Draft Sales Order (200 OK)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/12/cancel
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 12,
+    "soNumber": "SO-20260930-5710",
+    "customerName": "Cancel Test 1 (Draft)",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "cancelled",
+    "totalAmount": 120,
+    "notes": null,
+    "createdBy": 3,
+    "createdByName": "Inventory Staff",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 14,
+        "salesOrderId": 12,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 1,
+        "unitPrice": 120,
+        "subtotal": 120,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 8.5 UC-30: Admin Cancels Confirmed Sales Order (200 OK)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/14/cancel
+Authorization: Bearer <token_admin>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 14,
+    "soNumber": "SO-20260930-5058",
+    "customerName": "Cancel Test 3 (Confirmed)",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "cancelled",
+    "totalAmount": 120,
+    "notes": null,
+    "createdBy": 3,
+    "createdByName": "Inventory Staff",
+    "createdAt": "2026-09-30 10:22:20",
+    "updatedAt": "2026-09-30 10:22:20",
+    "items": [
+      {
+        "id": 16,
+        "salesOrderId": 14,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 1,
+        "unitPrice": 120,
+        "subtotal": 120,
+        "createdAt": "2026-09-30 10:22:20",
+        "updatedAt": "2026-09-30 10:22:20"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 8.6 UC-30: Attempt to Cancel Fulfilled SO (Expected 409 Conflict)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/sales-orders/8/cancel
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 409
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "CONFLICT",
+    "message": "Cannot cancel a sales order that has already been fulfilled"
+  }
+}
+
+================================================================================
+ALL STEP 6.B LIVE VERIFICATIONS COMPLETED SUCCESSFULLY
+================================================================================
+

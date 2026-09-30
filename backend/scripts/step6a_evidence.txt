@@ -1,0 +1,778 @@
+
+================================================================================
+### 1.1 Admin Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "admin@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzkwNzQyOTQ2LCJleHAiOjE3OTA4MjkzNDZ9.hPhnLxlgWxJrBIl6qhqOahqfCVj6LbompxeoIpbQKDw",
+    "user": {
+      "id": 1,
+      "name": "System Administrator",
+      "email": "admin@mygodown.com",
+      "role": "admin",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 1.2 Warehouse Manager Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "manager@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6Im1hbmFnZXIiLCJpYXQiOjE3OTA3NDI5NDYsImV4cCI6MTc5MDgyOTM0Nn0.M9y0tLNW3vHCTvFP4Y0vXnHoaxYCnf35tEKoo-87HBg",
+    "user": {
+      "id": 2,
+      "name": "Warehouse Manager",
+      "email": "manager@mygodown.com",
+      "role": "manager",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 1.3 Warehouse Staff Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "staff@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywicm9sZSI6InN0YWZmIiwiaWF0IjoxNzkwNzQyOTQ2LCJleHAiOjE3OTA4MjkzNDZ9.Ytx6Effn45KtsuhFL8ezGtqLRNvT-JcGgQvDqN7EIAw",
+    "user": {
+      "id": 3,
+      "name": "Inventory Staff",
+      "email": "staff@mygodown.com",
+      "role": "staff",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 2.1 UC-25: Create Draft PO with Server-Side Item Consolidation (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "supplierId": 2,
+  "warehouseId": 1,
+  "status": "draft",
+  "notes": "Q4 Bulk Procurement Order - Dock 3 Delivery",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 6,
+      "unitCost": 79.5
+    },
+    {
+      "productId": 1,
+      "quantity": 4,
+      "unitCost": 79.5
+    },
+    {
+      "productId": 2,
+      "quantity": 5,
+      "unitCost": 98
+    }
+  ]
+}
+
+RESPONSE:
+HTTP/1.1 201
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "poNumber": "PO-20260930-3475",
+    "supplierId": 2,
+    "supplierName": "VoltCore Electronics",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "draft",
+    "orderedAt": null,
+    "receivedAt": null,
+    "receivedBy": null,
+    "receivedByName": null,
+    "totalAmount": 1285,
+    "notes": "Q4 Bulk Procurement Order - Dock 3 Delivery",
+    "createdBy": 2,
+    "createdByName": "Warehouse Manager",
+    "createdAt": "2026-09-30 10:05:46",
+    "updatedAt": "2026-09-30 10:05:46",
+    "items": [
+      {
+        "id": 11,
+        "purchaseOrderId": 10,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 10,
+        "unitCost": 79.5,
+        "subtotal": 795,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      },
+      {
+        "id": 12,
+        "purchaseOrderId": 10,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 5,
+        "unitCost": 98,
+        "subtotal": 490,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 3.1 UC-P08: Edit Draft PO Lines and Header (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+PUT http://localhost:5000/api/purchase-orders/10
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "supplierId": 2,
+  "warehouseId": 1,
+  "notes": "Q4 Bulk Procurement Order - Adjusted Quantities (Dock 3)",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 8,
+      "unitCost": 80
+    },
+    {
+      "productId": 2,
+      "quantity": 4,
+      "unitCost": 95
+    }
+  ]
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "poNumber": "PO-20260930-3475",
+    "supplierId": 2,
+    "supplierName": "VoltCore Electronics",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "draft",
+    "orderedAt": null,
+    "receivedAt": null,
+    "receivedBy": null,
+    "receivedByName": null,
+    "totalAmount": 1020,
+    "notes": "Q4 Bulk Procurement Order - Adjusted Quantities (Dock 3)",
+    "createdBy": 2,
+    "createdByName": "Warehouse Manager",
+    "createdAt": "2026-09-30 10:05:46",
+    "updatedAt": "2026-09-30 10:05:46",
+    "items": [
+      {
+        "id": 13,
+        "purchaseOrderId": 10,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 8,
+        "unitCost": 80,
+        "subtotal": 640,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      },
+      {
+        "id": 14,
+        "purchaseOrderId": 10,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 4,
+        "unitCost": 95,
+        "subtotal": 380,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 4.1 UC-27: Mark PO as Ordered (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+PATCH http://localhost:5000/api/purchase-orders/10/status
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "status": "ordered"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "poNumber": "PO-20260930-3475",
+    "supplierId": 2,
+    "supplierName": "VoltCore Electronics",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "ordered",
+    "orderedAt": "2026-09-30 10:05:46",
+    "receivedAt": null,
+    "receivedBy": null,
+    "receivedByName": null,
+    "totalAmount": 1020,
+    "notes": "Q4 Bulk Procurement Order - Adjusted Quantities (Dock 3)",
+    "createdBy": 2,
+    "createdByName": "Warehouse Manager",
+    "createdAt": "2026-09-30 10:05:46",
+    "updatedAt": "2026-09-30 10:05:46",
+    "items": [
+      {
+        "id": 13,
+        "purchaseOrderId": 10,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 8,
+        "unitCost": 80,
+        "subtotal": 640,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      },
+      {
+        "id": 14,
+        "purchaseOrderId": 10,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 4,
+        "unitCost": 95,
+        "subtotal": 380,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 5.1 UC-P08: 409 Conflict on Editing Ordered PO (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+PUT http://localhost:5000/api/purchase-orders/10
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "supplierId": 2,
+  "warehouseId": 1,
+  "notes": "Q4 Bulk Procurement Order - Adjusted Quantities (Dock 3)",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 8,
+      "unitCost": 80
+    },
+    {
+      "productId": 2,
+      "quantity": 4,
+      "unitCost": 95
+    }
+  ]
+}
+
+RESPONSE:
+HTTP/1.1 409
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "CONFLICT",
+    "message": "Cannot edit purchase order in status 'ordered'. Only draft purchase orders can be edited."
+  }
+}
+
+================================================================================
+### 6.1 Stock Level Pre-Check (Before 1st Receive)
+--------------------------------------------------------------------------------
+Product 1 (TOOL-DRL-001) in WH 1 Initial Stock: 60 units
+Product 2 (TOOL-SAW-002) in WH 1 Initial Stock: 28 units
+
+================================================================================
+### 6.2 UC-27: First Receive of PO (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders/10/receive
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "poNumber": "PO-20260930-3475",
+    "supplierId": 2,
+    "supplierName": "VoltCore Electronics",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "received",
+    "orderedAt": "2026-09-30 10:05:46",
+    "receivedAt": "2026-09-30 10:05:46",
+    "receivedBy": 2,
+    "receivedByName": "Warehouse Manager",
+    "totalAmount": 1020,
+    "notes": "Q4 Bulk Procurement Order - Adjusted Quantities (Dock 3)",
+    "createdBy": 2,
+    "createdByName": "Warehouse Manager",
+    "createdAt": "2026-09-30 10:05:46",
+    "updatedAt": "2026-09-30 10:05:46",
+    "items": [
+      {
+        "id": 13,
+        "purchaseOrderId": 10,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 8,
+        "unitCost": 80,
+        "subtotal": 640,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      },
+      {
+        "id": 14,
+        "purchaseOrderId": 10,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 4,
+        "unitCost": 95,
+        "subtotal": 380,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 6.3 Stock Level Check After 1st Receive (Expected +8 and +4)
+--------------------------------------------------------------------------------
+Product 1 in WH 1: 60 -> 68 (Delta: +8) [Expected: +8]
+Product 2 in WH 1: 28 -> 32 (Delta: +4) [Expected: +4]
+
+================================================================================
+### 6.4 UC-27: Second Receive Attempt - Expected 409 Conflict
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders/10/receive
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 409
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "CONFLICT",
+    "message": "Purchase order has already been received"
+  }
+}
+
+================================================================================
+### 6.5 Stock Level Check After 2nd Receive Attempt (Proving Stock Did NOT Increase)
+--------------------------------------------------------------------------------
+Product 1 in WH 1: After 1st Receive = 68, After 2nd Attempt = 68
+Product 2 in WH 1: After 1st Receive = 32, After 2nd Attempt = 32
+PROVEN: Product 1 Stock Unchanged: true
+PROVEN: Product 2 Stock Unchanged: true
+
+================================================================================
+### 7.1 UC-27: Cancel Purchase Order from Draft (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders/11/cancel
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 11,
+    "poNumber": "PO-20260930-7383",
+    "supplierId": 2,
+    "supplierName": "VoltCore Electronics",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "cancelled",
+    "orderedAt": null,
+    "receivedAt": null,
+    "receivedBy": null,
+    "receivedByName": null,
+    "totalAmount": 160,
+    "notes": "PO to be cancelled from draft",
+    "createdBy": 2,
+    "createdByName": "Warehouse Manager",
+    "createdAt": "2026-09-30 10:05:46",
+    "updatedAt": "2026-09-30 10:05:46",
+    "items": [
+      {
+        "id": 15,
+        "purchaseOrderId": 11,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 2,
+        "unitCost": 80,
+        "subtotal": 160,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 7.2 UC-27: Cancel Purchase Order from Ordered (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders/12/cancel
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 12,
+    "poNumber": "PO-20260930-4689",
+    "supplierId": 2,
+    "supplierName": "VoltCore Electronics",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "cancelled",
+    "orderedAt": "2026-09-30 10:05:47",
+    "receivedAt": null,
+    "receivedBy": null,
+    "receivedByName": null,
+    "totalAmount": 285,
+    "notes": "PO to be cancelled from ordered",
+    "createdBy": 2,
+    "createdByName": "Warehouse Manager",
+    "createdAt": "2026-09-30 10:05:46",
+    "updatedAt": "2026-09-30 10:05:46",
+    "items": [
+      {
+        "id": 16,
+        "purchaseOrderId": 12,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 3,
+        "unitCost": 95,
+        "subtotal": 285,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 7.3 UC-27: 409 Conflict on Cancelling Received PO (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders/10/cancel
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 409
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "CONFLICT",
+    "message": "Cannot cancel a purchase order that has already been received"
+  }
+}
+
+================================================================================
+### 8.1 UC-26: Staff Blocked from Create PO (403)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "supplierId": 2,
+  "warehouseId": 1,
+  "status": "draft",
+  "notes": "Q4 Bulk Procurement Order - Dock 3 Delivery",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 6,
+      "unitCost": 79.5
+    },
+    {
+      "productId": 1,
+      "quantity": 4,
+      "unitCost": 79.5
+    },
+    {
+      "productId": 2,
+      "quantity": 5,
+      "unitCost": 98
+    }
+  ]
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 8.2 UC-26: Staff Blocked from Edit PO (403)
+--------------------------------------------------------------------------------
+REQUEST:
+PUT http://localhost:5000/api/purchase-orders/10
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "supplierId": 2,
+  "warehouseId": 1,
+  "notes": "Q4 Bulk Procurement Order - Adjusted Quantities (Dock 3)",
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 8,
+      "unitCost": 80
+    },
+    {
+      "productId": 2,
+      "quantity": 4,
+      "unitCost": 95
+    }
+  ]
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 8.3 UC-26: Staff Blocked from Receive PO (403)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders/10/receive
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 8.4 UC-26: Staff Blocked from Cancel PO (403)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/purchase-orders/10/cancel
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 8.5 UC-26: Staff Blocked from Listing POs (403)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/purchase-orders
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin or manager"
+  }
+}
+
+================================================================================
+### 9.1 UC-26: Single PO Detail View (Manager)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/purchase-orders/10
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 10,
+    "poNumber": "PO-20260930-3475",
+    "supplierId": 2,
+    "supplierName": "VoltCore Electronics",
+    "warehouseId": 1,
+    "warehouseName": "Central Logistics Hub",
+    "status": "received",
+    "orderedAt": "2026-09-30 10:05:46",
+    "receivedAt": "2026-09-30 10:05:46",
+    "receivedBy": 2,
+    "receivedByName": "Warehouse Manager",
+    "totalAmount": 1020,
+    "notes": "Q4 Bulk Procurement Order - Adjusted Quantities (Dock 3)",
+    "createdBy": 2,
+    "createdByName": "Warehouse Manager",
+    "createdAt": "2026-09-30 10:05:46",
+    "updatedAt": "2026-09-30 10:05:46",
+    "items": [
+      {
+        "id": 13,
+        "purchaseOrderId": 10,
+        "productId": 1,
+        "productName": "Cordless Brushless Drill 18V",
+        "productSku": "TOOL-DRL-001",
+        "quantity": 8,
+        "unitCost": 80,
+        "subtotal": 640,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      },
+      {
+        "id": 14,
+        "purchaseOrderId": 10,
+        "productId": 2,
+        "productName": "Circular Saw 7-1/4 Inch 15A",
+        "productSku": "TOOL-SAW-002",
+        "quantity": 4,
+        "unitCost": 95,
+        "subtotal": 380,
+        "createdAt": "2026-09-30 10:05:46",
+        "updatedAt": "2026-09-30 10:05:46"
+      }
+    ]
+  }
+}
+
+================================================================================
+ALL STEP 6.A LIVE VERIFICATIONS COMPLETED SUCCESSFULLY
+================================================================================
+

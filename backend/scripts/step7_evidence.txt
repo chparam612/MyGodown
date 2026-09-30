@@ -1,0 +1,760 @@
+
+================================================================================
+### 1.1 Admin Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "admin@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzkwNzQ0MjcxLCJleHAiOjE3OTA4MzA2NzF9.fOsZxWpe7JoeuHB_kx4nAJ1RjrdYe78DWXPtu2t63yA",
+    "user": {
+      "id": 1,
+      "name": "System Administrator",
+      "email": "admin@mygodown.com",
+      "role": "admin",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 1.2 Warehouse Manager Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "manager@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6Im1hbmFnZXIiLCJpYXQiOjE3OTA3NDQyNzEsImV4cCI6MTc5MDgzMDY3MX0.9Tpg0rcNESfcvpmM7McRDHYeG8saNWvxE8Mu4lT4q_4",
+    "user": {
+      "id": 2,
+      "name": "Warehouse Manager",
+      "email": "manager@mygodown.com",
+      "role": "manager",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 1.3 Warehouse Staff Authentication
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "staff@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Mywicm9sZSI6InN0YWZmIiwiaWF0IjoxNzkwNzQ0MjcxLCJleHAiOjE3OTA4MzA2NzF9.-FYv5rBO9AEs0Ppi9JGKgCrWIxZ5aFbth0QB38UPAnU",
+    "user": {
+      "id": 3,
+      "name": "Inventory Staff",
+      "email": "staff@mygodown.com",
+      "role": "staff",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 2.1 Staff Blocked from Listing Users (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/users
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin"
+  }
+}
+
+================================================================================
+### 2.2 Manager Blocked from Listing Users (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/users
+Authorization: Bearer <token_manager>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin"
+  }
+}
+
+================================================================================
+### 2.3 Staff Blocked from Creating User (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/users
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "name": "Unauthorized User",
+  "email": "unauth@test.com",
+  "password": "[REDACTED]",
+  "role": "staff"
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin"
+  }
+}
+
+================================================================================
+### 2.4 Manager Blocked from Creating User (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/users
+Authorization: Bearer <token_manager>
+Content-Type: application/json
+
+{
+  "name": "Unauthorized User",
+  "email": "unauth2@test.com",
+  "password": "[REDACTED]",
+  "role": "staff"
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin"
+  }
+}
+
+================================================================================
+### 2.5 Staff Blocked from Editing User (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+PUT http://localhost:5000/api/users/1
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "name": "Compromised Name"
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin"
+  }
+}
+
+================================================================================
+### 2.6 Staff Blocked from Deactivating User (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+DELETE http://localhost:5000/api/users/1
+Authorization: Bearer <token_staff>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin"
+  }
+}
+
+================================================================================
+### 2.7 Staff Blocked from Resetting Password (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/users/1/reset-password
+Authorization: Bearer <token_staff>
+Content-Type: application/json
+
+{
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Access denied: required role admin"
+  }
+}
+
+================================================================================
+### 3.1 UC-04: Weak Password Rejected (400 Bad Request)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/users
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "name": "Weak Password Test",
+  "email": "weakpass@test.com",
+  "password": "[REDACTED]",
+  "role": "staff"
+}
+
+RESPONSE:
+HTTP/1.1 400
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": [
+      {
+        "target": "body",
+        "field": "password",
+        "message": "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 3.2 UC-04: Duplicate Email Rejected (409 Conflict)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/users
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "name": "Duplicate Email Test",
+  "email": "admin@mygodown.com",
+  "password": "[REDACTED]",
+  "role": "staff"
+}
+
+RESPONSE:
+HTTP/1.1 409
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "CONFLICT",
+    "message": "A user with this email address already exists"
+  }
+}
+
+================================================================================
+### 3.3 UC-04: Admin Creates User (201 Created)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/users
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "name": "Alex Rivera",
+  "email": "alex.rivera.1790744271803@mygodown.com",
+  "password": "[REDACTED]",
+  "role": "staff"
+}
+
+RESPONSE:
+HTTP/1.1 201
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 16,
+    "name": "Alex Rivera",
+    "email": "alex.rivera.1790744271803@mygodown.com",
+    "role": "staff",
+    "isActive": true,
+    "createdAt": "2026-09-30 10:27:51",
+    "updatedAt": "2026-09-30 10:27:51"
+  }
+}
+
+================================================================================
+### 4.1 UC-05: List Users Response (Admin)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/users?limit=5
+Authorization: Bearer <token_admin>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": [
+    {
+      "id": 16,
+      "name": "Alex Rivera",
+      "email": "alex.rivera.1790744271803@mygodown.com",
+      "role": "staff",
+      "isActive": true,
+      "createdAt": "2026-09-30 10:27:51",
+      "updatedAt": "2026-09-30 10:27:51"
+    },
+    {
+      "id": 14,
+      "name": "Alex Rivera (Promoted)",
+      "email": "alex.rivera@mygodown.com",
+      "role": "manager",
+      "isActive": false,
+      "createdAt": "2026-09-30 10:26:30",
+      "updatedAt": "2026-09-30 10:26:30"
+    },
+    {
+      "id": 15,
+      "name": "Secondary Admin",
+      "email": "secondary.admin@mygodown.com",
+      "role": "admin",
+      "isActive": false,
+      "createdAt": "2026-09-30 10:26:30",
+      "updatedAt": "2026-09-30 10:26:30"
+    },
+    {
+      "id": 13,
+      "name": "LIVE Audit Staff",
+      "email": "live_user_92799@mygodown.com",
+      "role": "staff",
+      "isActive": false,
+      "createdAt": "2026-09-29 12:14:52",
+      "updatedAt": "2026-09-29 12:14:53"
+    },
+    {
+      "id": 12,
+      "name": "LIVE Audit Staff",
+      "email": "live_user_51082@mygodown.com",
+      "role": "staff",
+      "isActive": false,
+      "createdAt": "2026-09-29 12:10:51",
+      "updatedAt": "2026-09-29 12:10:51"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 5,
+    "total": 15,
+    "totalPages": 3
+  }
+}
+
+================================================================================
+### 4.2 UC-05: Get User by ID Response (Admin)
+--------------------------------------------------------------------------------
+REQUEST:
+GET http://localhost:5000/api/users/16
+Authorization: Bearer <token_admin>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 16,
+    "name": "Alex Rivera",
+    "email": "alex.rivera.1790744271803@mygodown.com",
+    "role": "staff",
+    "isActive": true,
+    "createdAt": "2026-09-30 10:27:51",
+    "updatedAt": "2026-09-30 10:27:51"
+  }
+}
+
+================================================================================
+### 4.3 Password Hash Absence Audit
+--------------------------------------------------------------------------------
+Password / password_hash in Create Response: false
+Password / password_hash in List Response: false
+Password / password_hash in GetById Response: false
+PROVEN: Sensitive credential fields are never serialized or returned: true
+
+================================================================================
+### 5.1 UC-06: Admin Cannot Demote Themselves (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+PUT http://localhost:5000/api/users/1
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "role": "staff"
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Administrators cannot demote their own role"
+  }
+}
+
+================================================================================
+### 5.2 UC-06: Admin Cannot Deactivate Themselves via PUT (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+PUT http://localhost:5000/api/users/1
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Administrators cannot deactivate their own account"
+  }
+}
+
+================================================================================
+### 5.3 UC-06: Admin Cannot Deactivate Themselves via DELETE (403 Forbidden)
+--------------------------------------------------------------------------------
+REQUEST:
+DELETE http://localhost:5000/api/users/1
+Authorization: Bearer <token_admin>
+
+RESPONSE:
+HTTP/1.1 403
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "Administrators cannot deactivate their own account"
+  }
+}
+
+================================================================================
+### 5.4 UC-06: Deactivate Secondary Admin (Leaving exactly 1 active admin)
+--------------------------------------------------------------------------------
+REQUEST:
+DELETE http://localhost:5000/api/users/17
+Authorization: Bearer <token_admin>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 17,
+    "isActive": false,
+    "message": "User successfully deactivated"
+  }
+}
+
+================================================================================
+### 5.5 UC-06: Admin Updates User Profile & Role (200 OK)
+--------------------------------------------------------------------------------
+REQUEST:
+PUT http://localhost:5000/api/users/16
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "name": "Alex Rivera (Promoted)",
+  "role": "manager"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 16,
+    "name": "Alex Rivera (Promoted)",
+    "email": "alex.rivera.1790744271803@mygodown.com",
+    "role": "manager",
+    "isActive": true,
+    "createdAt": "2026-09-30 10:27:51",
+    "updatedAt": "2026-09-30 10:27:52"
+  }
+}
+
+================================================================================
+### 6.1 UC-06: Soft-Deactivate User (200 OK)
+--------------------------------------------------------------------------------
+REQUEST:
+DELETE http://localhost:5000/api/users/16
+Authorization: Bearer <token_admin>
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 16,
+    "isActive": false,
+    "message": "User successfully deactivated"
+  }
+}
+
+================================================================================
+### 6.2 Deactivated User Login Attempt (Expected 401 Account Inactive)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "alex.rivera.1790744271803@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 401
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "User account has been deactivated"
+  }
+}
+
+================================================================================
+### 6.3 UC-06: Reactivate User via Edit (200 OK)
+--------------------------------------------------------------------------------
+REQUEST:
+PUT http://localhost:5000/api/users/16
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "isActive": true
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 16,
+    "name": "Alex Rivera (Promoted)",
+    "email": "alex.rivera.1790744271803@mygodown.com",
+    "role": "manager",
+    "isActive": true,
+    "createdAt": "2026-09-30 10:27:51",
+    "updatedAt": "2026-09-30 10:27:52"
+  }
+}
+
+================================================================================
+### 6.4 Reactivated User Login (200 OK)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "alex.rivera.1790744271803@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTYsInJvbGUiOiJtYW5hZ2VyIiwiaWF0IjoxNzkwNzQ0MjcyLCJleHAiOjE3OTA4MzA2NzJ9.lrMAvbveivZVPdDCPcuxpPtPh1uxPnJwCelehfaWsCM",
+    "user": {
+      "id": 16,
+      "name": "Alex Rivera (Promoted)",
+      "email": "alex.rivera.1790744271803@mygodown.com",
+      "role": "manager",
+      "isActive": true
+    }
+  }
+}
+
+================================================================================
+### 7.1 UC-P02: Weak Reset Password Rejected (400 Bad Request)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/users/16/reset-password
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 400
+Content-Type: application/json
+
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": [
+      {
+        "target": "body",
+        "field": "password",
+        "message": "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number"
+      }
+    ]
+  }
+}
+
+================================================================================
+### 7.2 UC-P02: Admin Resets User Password (200 OK)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/users/16/reset-password
+Authorization: Bearer <token_admin>
+Content-Type: application/json
+
+{
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "id": 16,
+    "message": "Password reset successfully"
+  }
+}
+
+================================================================================
+### 7.3 Login with Reset Password (200 OK)
+--------------------------------------------------------------------------------
+REQUEST:
+POST http://localhost:5000/api/auth/login
+Authorization: Bearer <token_none>
+Content-Type: application/json
+
+{
+  "email": "alex.rivera.1790744271803@mygodown.com",
+  "password": "[REDACTED]"
+}
+
+RESPONSE:
+HTTP/1.1 200
+Content-Type: application/json
+
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTYsInJvbGUiOiJtYW5hZ2VyIiwiaWF0IjoxNzkwNzQ0MjcyLCJleHAiOjE3OTA4MzA2NzJ9.lrMAvbveivZVPdDCPcuxpPtPh1uxPnJwCelehfaWsCM",
+    "user": {
+      "id": 16,
+      "name": "Alex Rivera (Promoted)",
+      "email": "alex.rivera.1790744271803@mygodown.com",
+      "role": "manager",
+      "isActive": true
+    }
+  }
+}
+
+Cleaned up test user: alex.rivera.1790744271803@mygodown.com (deactivated)
+
+================================================================================
+ALL STEP 7 LIVE VERIFICATIONS COMPLETED SUCCESSFULLY
+================================================================================
+

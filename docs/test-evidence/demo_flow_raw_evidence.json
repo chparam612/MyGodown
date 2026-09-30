@@ -1,0 +1,557 @@
+{
+  "timestamp": "2026-09-30T05:22:04.576Z",
+  "environment": {
+    "backendUrl": "http://localhost:5000/api",
+    "frontendUrl": "http://localhost:5173",
+    "nodeVersion": "v24.13.1",
+    "database": "inventory_db"
+  },
+  "steps": [
+    {
+      "step": 1,
+      "name": "Admin Login",
+      "action": "POST /api/auth/login with README admin demo credentials",
+      "expected": "HTTP 200 with JWT token and role admin",
+      "actual": "HTTP 200 with role: admin",
+      "status": "PASS",
+      "summary": "Admin logged in successfully with valid session token",
+      "evidence": {
+        "user": {
+          "id": 1,
+          "name": "System Administrator",
+          "email": "admin@mygodown.com",
+          "role": "admin",
+          "isActive": true
+        },
+        "tokenSnippet": "eyJhbGciOiJIUzI1NiIsInR5c..."
+      }
+    },
+    {
+      "step": 2,
+      "name": "Initial State & Starting KPIs",
+      "action": "GET /api/dashboard/summary & GET /api/inventory initial inspection",
+      "expected": "Operational dashboard metrics and initial stock balances retrieved",
+      "actual": "Dashboard totalStock=undefined, stockValue=52691, openPOs=0, openSOs=4, lowStock=4",
+      "status": "PASS",
+      "summary": "Baseline captured for Product #1 (Cordless Brushless Drill 18V, SKU: TOOL-DRL-001) in Warehouse #1 (Central Logistics Hub)",
+      "evidence": {
+        "targetProduct": {
+          "id": 1,
+          "sku": "TOOL-DRL-001",
+          "name": "Cordless Brushless Drill 18V",
+          "costPrice": 79.5,
+          "unitPrice": 129.99,
+          "reorderLevel": 15
+        },
+        "warehouse1": {
+          "id": 1,
+          "code": "WH-CENTRAL",
+          "name": "Central Logistics Hub"
+        },
+        "warehouse2": {
+          "id": 2,
+          "code": "WH-EAST",
+          "name": "East Coast Distribution Center"
+        },
+        "initialStockInWh1": 81,
+        "initialKpis": {
+          "totalActiveProducts": 28,
+          "totalStockUnits": 1963,
+          "stockValue": 52691,
+          "lowStockCount": 4,
+          "openPurchaseOrders": 0,
+          "openSalesOrders": 4,
+          "stockByWarehouse": [
+            {
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "warehouseCode": "WH-CENTRAL",
+              "totalUnits": 1327
+            },
+            {
+              "warehouseId": 2,
+              "warehouseName": "East Coast Distribution Center",
+              "warehouseCode": "WH-EAST",
+              "totalUnits": 346
+            },
+            {
+              "warehouseId": 3,
+              "warehouseName": "West Coast Fulfillment Center",
+              "warehouseCode": "WH-WEST",
+              "totalUnits": 290
+            }
+          ],
+          "recentMovements": [
+            {
+              "id": 95,
+              "productId": 96,
+              "productName": "Demo Low Stock Test Widget",
+              "productSku": "DEMO-LS-1790745641967",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "adjustment",
+              "quantity": 25,
+              "reference": "Replenishment restock above reorder level",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:50:42"
+            },
+            {
+              "id": 94,
+              "productId": 96,
+              "productName": "Demo Low Stock Test Widget",
+              "productSku": "DEMO-LS-1790745641967",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "adjustment",
+              "quantity": -15,
+              "reference": "Audit adjustment to test low stock trigger",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:50:42"
+            },
+            {
+              "id": 93,
+              "productId": 96,
+              "productName": "Demo Low Stock Test Widget",
+              "productSku": "DEMO-LS-1790745641967",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "in",
+              "quantity": 30,
+              "reference": null,
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:50:41"
+            },
+            {
+              "id": 92,
+              "productId": 1,
+              "productName": "Cordless Brushless Drill 18V",
+              "productSku": "TOOL-DRL-001",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "adjustment",
+              "quantity": 2,
+              "reference": "Physical cycle count audit bin variance verified",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:50:41"
+            },
+            {
+              "id": 91,
+              "productId": 1,
+              "productName": "Cordless Brushless Drill 18V",
+              "productSku": "TOOL-DRL-001",
+              "warehouseId": 2,
+              "warehouseName": "East Coast Distribution Center",
+              "movementType": "in",
+              "quantity": 3,
+              "reference": "TRF-1790745641876-FKSYC (Transfer from WH 1)",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:50:41"
+            },
+            {
+              "id": 90,
+              "productId": 1,
+              "productName": "Cordless Brushless Drill 18V",
+              "productSku": "TOOL-DRL-001",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "out",
+              "quantity": 3,
+              "reference": "TRF-1790745641876-FKSYC (Transfer to WH 2)",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:50:41"
+            },
+            {
+              "id": 89,
+              "productId": 1,
+              "productName": "Cordless Brushless Drill 18V",
+              "productSku": "TOOL-DRL-001",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "out",
+              "quantity": 4,
+              "reference": "SO Fulfilment: SO-20260930-1743",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:50:41"
+            },
+            {
+              "id": 88,
+              "productId": 1,
+              "productName": "Cordless Brushless Drill 18V",
+              "productSku": "TOOL-DRL-001",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "in",
+              "quantity": 10,
+              "reference": "PO Receipt: PO-20260930-5489",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:50:41"
+            },
+            {
+              "id": 87,
+              "productId": 95,
+              "productName": "Demo Low Stock Test Widget",
+              "productSku": "DEMO-LS-1790745598532",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "adjustment",
+              "quantity": 25,
+              "reference": "Replenishment restock above reorder level",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:49:58"
+            },
+            {
+              "id": 86,
+              "productId": 95,
+              "productName": "Demo Low Stock Test Widget",
+              "productSku": "DEMO-LS-1790745598532",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "movementType": "adjustment",
+              "quantity": -15,
+              "reference": "Audit adjustment to test low stock trigger",
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "createdAt": "2026-09-30 10:49:58"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "step": 3,
+      "name": "Purchase Order Lifecycle & Stock Receipt",
+      "action": "Create draft PO -> Edit via UC-P08 (5 to 10 units) -> PATCH ordered -> POST receive",
+      "expected": "Status received, stock rises by exactly 10 units, movement reference_type purchase_order, KPIs updated",
+      "actual": "Status=received, Stock before=81, Stock ordered=81, Stock received=91 (+10), Movement ref=purchase_order, qty=10",
+      "status": "PASS",
+      "summary": "PO created, edited, ordered, and received atomically with verified stock increment (+10) and ledger audit entry",
+      "evidence": {
+        "poNumber": "PO-20260930-6606",
+        "poId": 16,
+        "editResult": {
+          "totalAmount": 795,
+          "items": [
+            {
+              "id": 23,
+              "purchaseOrderId": 16,
+              "productId": 1,
+              "productName": "Cordless Brushless Drill 18V",
+              "productSku": "TOOL-DRL-001",
+              "quantity": 10,
+              "unitCost": 79.5,
+              "subtotal": 795,
+              "createdAt": "2026-09-30 10:52:04",
+              "updatedAt": "2026-09-30 10:52:04"
+            }
+          ]
+        },
+        "receiveResponse": {
+          "id": 16,
+          "status": "received"
+        },
+        "stockDelta": {
+          "before": 81,
+          "after": 91,
+          "delta": 10
+        },
+        "ledgerMovement": {
+          "id": 96,
+          "productId": 1,
+          "productName": "Cordless Brushless Drill 18V",
+          "productSku": "TOOL-DRL-001",
+          "warehouseId": 1,
+          "warehouseName": "Central Logistics Hub",
+          "warehouseCode": "WH-CENTRAL",
+          "userId": 1,
+          "userName": "System Administrator",
+          "userRole": "admin",
+          "movementType": "in",
+          "referenceType": "purchase_order",
+          "referenceId": 16,
+          "quantity": 10,
+          "reference": "PO Receipt: PO-20260930-6606",
+          "createdAt": "2026-09-30 10:52:04"
+        },
+        "kpiDelta": {
+          "stockValueBefore": 52691,
+          "stockValueAfter": 53486
+        }
+      }
+    },
+    {
+      "step": 4,
+      "name": "Sales Order Lifecycle & Atomic Fulfillment",
+      "action": "Create draft SO -> POST confirm -> POST fulfill (terminal action)",
+      "expected": "Status confirmed leaves stock unchanged; status fulfilled decrements stock by 4, movement reference_type sales_order, KPIs updated",
+      "actual": "Status=fulfilled, Stock after confirm=91 (delta 0), Stock after fulfill=87 (-4), Movement ref=sales_order, qty=4",
+      "status": "PASS",
+      "summary": "Sales order confirmed with zero stock impact, then fulfilled with atomic stock deduction (-4) and ledger entry",
+      "evidence": {
+        "soNumber": "SO-20260930-9309",
+        "soId": 17,
+        "confirmResult": {
+          "status": "confirmed",
+          "stockDuringConfirm": 91
+        },
+        "fulfillResult": {
+          "status": "fulfilled",
+          "stockAfterFulfill": 87
+        },
+        "ledgerMovement": {
+          "id": 97,
+          "productId": 1,
+          "productName": "Cordless Brushless Drill 18V",
+          "productSku": "TOOL-DRL-001",
+          "warehouseId": 1,
+          "warehouseName": "Central Logistics Hub",
+          "warehouseCode": "WH-CENTRAL",
+          "userId": 1,
+          "userName": "System Administrator",
+          "userRole": "admin",
+          "movementType": "out",
+          "referenceType": "sales_order",
+          "referenceId": 17,
+          "quantity": 4,
+          "reference": "SO Fulfilment: SO-20260930-9309",
+          "createdAt": "2026-09-30 10:52:05"
+        },
+        "kpiDelta": {}
+      }
+    },
+    {
+      "step": 5,
+      "name": "Inter-Warehouse Stock Transfer",
+      "action": "POST /api/inventory/transfer 3 units from WH #1 to WH #2",
+      "expected": "Source decreased by 3, destination increased by 3, two linked movements sharing reference with reference_type transfer",
+      "actual": "Source: 87 -> 84 (-3); Dest: 48 -> 51 (+3); Linked movements: ref1=98, ref2=98, type=transfer",
+      "status": "PASS",
+      "summary": "Atomic inter-warehouse transfer completed: source decremented, destination incremented, dual linked ledger movements recorded",
+      "evidence": {
+        "sourceWarehouse": {
+          "id": 1,
+          "before": 87,
+          "after": 84,
+          "delta": -3
+        },
+        "destWarehouse": {
+          "id": 2,
+          "before": 48,
+          "after": 51,
+          "delta": 3
+        },
+        "transferResponse": {
+          "success": true,
+          "data": {
+            "productId": 1,
+            "sourceWarehouseId": 1,
+            "destinationWarehouseId": 2,
+            "quantity": 3,
+            "transferReference": "TRF-1790745725169-F83NL",
+            "sourceRemainingStock": 84,
+            "destinationNewStock": 51,
+            "sourceMovementId": 98,
+            "destinationMovementId": 99,
+            "notes": null
+          }
+        },
+        "linkedMovements": [
+          {
+            "id": 99,
+            "productId": 1,
+            "productName": "Cordless Brushless Drill 18V",
+            "productSku": "TOOL-DRL-001",
+            "warehouseId": 2,
+            "warehouseName": "East Coast Distribution Center",
+            "warehouseCode": "WH-EAST",
+            "userId": 1,
+            "userName": "System Administrator",
+            "userRole": "admin",
+            "movementType": "in",
+            "referenceType": "transfer",
+            "referenceId": 98,
+            "quantity": 3,
+            "reference": "TRF-1790745725169-F83NL (Transfer from WH 1)",
+            "createdAt": "2026-09-30 10:52:05"
+          },
+          {
+            "id": 98,
+            "productId": 1,
+            "productName": "Cordless Brushless Drill 18V",
+            "productSku": "TOOL-DRL-001",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "warehouseCode": "WH-CENTRAL",
+            "userId": 1,
+            "userName": "System Administrator",
+            "userRole": "admin",
+            "movementType": "out",
+            "referenceType": "transfer",
+            "referenceId": 98,
+            "quantity": 3,
+            "reference": "TRF-1790745725169-F83NL (Transfer to WH 2)",
+            "createdAt": "2026-09-30 10:52:05"
+          }
+        ]
+      }
+    },
+    {
+      "step": 6,
+      "name": "Stock Adjustment & Signed Delta Movement",
+      "action": "POST /api/inventory/adjust countedQuantity=86 with reason",
+      "expected": "Stock set to counted quantity, signed delta movement created with reference_type adjustment",
+      "actual": "Stock: 84 -> 86 (delta = +2), Movement qty=2, reference_type=adjustment",
+      "status": "PASS",
+      "summary": "Stock successfully adjusted to physical count (+2 delta) with audit ledger entry referencing reason",
+      "evidence": {
+        "countedQuantity": 86,
+        "reason": "Physical cycle count audit bin variance verified",
+        "before": 84,
+        "after": 86,
+        "delta": 2,
+        "movement": {
+          "id": 100,
+          "productId": 1,
+          "productName": "Cordless Brushless Drill 18V",
+          "productSku": "TOOL-DRL-001",
+          "warehouseId": 1,
+          "warehouseName": "Central Logistics Hub",
+          "warehouseCode": "WH-CENTRAL",
+          "userId": 1,
+          "userName": "System Administrator",
+          "userRole": "admin",
+          "movementType": "adjustment",
+          "referenceType": "adjustment",
+          "referenceId": null,
+          "quantity": 2,
+          "reference": "Physical cycle count audit bin variance verified",
+          "createdAt": "2026-09-30 10:52:05"
+        }
+      }
+    },
+    {
+      "step": 7,
+      "name": "Low Stock Trigger, Dashboard KPI, and Restock Clearance",
+      "action": "Create product with reorderLevel=25, reduce stock to 15 (trigger), restock to 40 (clear)",
+      "expected": "At qty=15: appears in /inventory/low-stock and dashboard lowStockCount increments. At qty=40: disappears and KPI decrements",
+      "actual": "Initial lowStockCount=4. At qty=15: inList=true, lowStockCount=5 (+1). At qty=40: inList=false, lowStockCount=4 (-1)",
+      "status": "PASS",
+      "summary": "Low stock lifecycle fully validated: triggered alert on deficit, updated dashboard KPI, and cleared cleanly upon restocking",
+      "evidence": {
+        "tempProduct": {
+          "id": 97,
+          "sku": "DEMO-LS-1790745725244",
+          "reorderLevel": 25
+        },
+        "deficitPhase": {
+          "quantity": 15,
+          "lowStockReportPresent": true,
+          "kpiCount": 5
+        },
+        "clearedPhase": {
+          "quantity": 40,
+          "lowStockReportPresent": false,
+          "kpiCount": 4
+        }
+      }
+    },
+    {
+      "step": 8,
+      "name": "Staff Role Data Masking Network Verification (BR-05)",
+      "action": "Network payload inspection of Dashboard, Products, and Inventory as Staff vs Admin",
+      "expected": "Staff responses strictly omit stockValue and costPrice at the JSON key level (Object.keys check)",
+      "actual": "Staff Dashboard: 'stockValue' in data = false (keys: [totalActiveProducts, totalStockUnits, lowStockCount, openPurchaseOrders, openSalesOrders, stockByWarehouse, recentMovements]). Admin Dashboard: 'stockValue' in data = true. Staff Products: costPrice in list = false, in detail = false. Admin Products: costPrice in detail = true. Staff Inventory: costPrice in items = false. Admin Inventory: costPrice in items = true.",
+      "status": "PASS",
+      "summary": "Network-level verification confirmed: stockValue and costPrice are genuinely omitted from JSON responses for staff",
+      "evidence": {
+        "staffDashboardKeys": [
+          "totalActiveProducts",
+          "totalStockUnits",
+          "lowStockCount",
+          "openPurchaseOrders",
+          "openSalesOrders",
+          "stockByWarehouse",
+          "recentMovements"
+        ],
+        "adminDashboardKeys": [
+          "totalActiveProducts",
+          "totalStockUnits",
+          "stockValue",
+          "lowStockCount",
+          "openPurchaseOrders",
+          "openSalesOrders",
+          "stockByWarehouse",
+          "recentMovements"
+        ],
+        "staffProductKeys": [
+          "id",
+          "sku",
+          "name",
+          "description",
+          "category",
+          "unitPrice",
+          "reorderLevel",
+          "supplierId",
+          "supplierName",
+          "isActive",
+          "totalStock",
+          "createdAt",
+          "updatedAt"
+        ],
+        "adminProductKeys": [
+          "id",
+          "sku",
+          "name",
+          "description",
+          "category",
+          "unitPrice",
+          "costPrice",
+          "reorderLevel",
+          "supplierId",
+          "supplierName",
+          "isActive",
+          "totalStock",
+          "createdAt",
+          "updatedAt"
+        ],
+        "staffInventoryKeys": [
+          "id",
+          "productId",
+          "sku",
+          "productName",
+          "category",
+          "unitPrice",
+          "reorderLevel",
+          "warehouseId",
+          "warehouseName",
+          "warehouseCode",
+          "quantity",
+          "updatedAt"
+        ],
+        "adminInventoryKeys": [
+          "id",
+          "productId",
+          "sku",
+          "productName",
+          "category",
+          "unitPrice",
+          "costPrice",
+          "reorderLevel",
+          "warehouseId",
+          "warehouseName",
+          "warehouseCode",
+          "quantity",
+          "updatedAt"
+        ]
+      }
+    }
+  ]
+}

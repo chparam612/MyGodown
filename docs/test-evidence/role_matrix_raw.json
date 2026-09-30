@@ -1,0 +1,2273 @@
+{
+  "timestamp": "2026-09-30T05:27:30.817Z",
+  "totalTests": 25,
+  "allPass": true,
+  "unauthenticatedStatus": 401,
+  "deactivatedUserMeStatus": 401,
+  "deactivatedUserProtectedStatus": 401,
+  "mismatches": [],
+  "matrix": [
+    {
+      "action": "Users: List/View (`GET /api/users`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": 19,
+              "name": "Deact Test User",
+              "email": "deact_user_1790745978808@example.com",
+              "role": "staff",
+              "isActive": false,
+              "createdAt": "2026-09-30 10:56:18",
+              "updatedAt": "2026-09-30 10:56:18"
+            }
+          ],
+          "meta": {
+            "page": 1,
+            "limit": 1,
+            "total": 18,
+            "totalPages": 18
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Visible in Nav & DataGrid accessible",
+        "manager": "Nav hidden, URL redirects to /access-denied",
+        "staff": "Nav hidden, URL redirects to /access-denied"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Users: Create User (`POST /api/users`)",
+      "adminApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 20,
+            "name": "Role Test User",
+            "email": "roletest_1790746049103@example.com",
+            "role": "staff",
+            "isActive": true,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Create button visible & opens dialog",
+        "manager": "Nav hidden & route blocked",
+        "staff": "Nav hidden & route blocked"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Users: Edit User (`PUT /api/users/:id`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 20,
+            "name": "Role Test User Updated",
+            "email": "roletest_1790746049103@example.com",
+            "role": "staff",
+            "isActive": true,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Edit action visible in row actions",
+        "manager": "Nav hidden & route blocked",
+        "staff": "Nav hidden & route blocked"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Users: Reset Password (`POST /api/users/:id/reset-password`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 20,
+            "message": "Password reset successfully"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Reset password menu item visible",
+        "manager": "Nav hidden & route blocked",
+        "staff": "Nav hidden & route blocked"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Users: Deactivate User (`DELETE /api/users/:id`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 20,
+            "isActive": false,
+            "message": "User successfully deactivated"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Deactivate action visible in row actions",
+        "manager": "Nav hidden & route blocked",
+        "staff": "Nav hidden & route blocked"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Auth: Change Own Password (`POST /api/auth/change-password`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "message": "Password changed successfully"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "message": "Password changed successfully"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "message": "Password changed successfully"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Available in User Menu for all",
+        "manager": "Available in User Menu for all",
+        "staff": "Available in User Menu for all"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Products: Create (`POST /api/products`)",
+      "adminApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 100,
+            "sku": "RM-P-ADM-1790746049762",
+            "name": "Admin Prod",
+            "description": null,
+            "category": "Tools",
+            "unitPrice": 20,
+            "costPrice": 10,
+            "reorderLevel": 5,
+            "supplierId": 1,
+            "supplierName": "Apex Industrial Tools",
+            "isActive": true,
+            "totalStock": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 101,
+            "sku": "RM-P-MGR-1790746049783",
+            "name": "Mgr Prod",
+            "description": null,
+            "category": "Tools",
+            "unitPrice": 20,
+            "costPrice": 10,
+            "reorderLevel": 5,
+            "supplierId": 1,
+            "supplierName": "Apex Industrial Tools",
+            "isActive": true,
+            "totalStock": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Add Product button visible & active",
+        "manager": "Add Product button visible & active",
+        "staff": "Add Product button hidden/disabled"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Products: Edit (`PUT /api/products/:id`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 100,
+            "sku": "RM-P-ADM-1790746049762",
+            "name": "Admin Prod Updated",
+            "description": null,
+            "category": "Tools",
+            "unitPrice": 20,
+            "costPrice": 10,
+            "reorderLevel": 5,
+            "supplierId": 1,
+            "supplierName": "Apex Industrial Tools",
+            "isActive": true,
+            "totalStock": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 100,
+            "sku": "RM-P-ADM-1790746049762",
+            "name": "Mgr Prod Updated",
+            "description": null,
+            "category": "Tools",
+            "unitPrice": 20,
+            "costPrice": 10,
+            "reorderLevel": 5,
+            "supplierId": 1,
+            "supplierName": "Apex Industrial Tools",
+            "isActive": true,
+            "totalStock": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Edit row action visible & active",
+        "manager": "Edit row action visible & active",
+        "staff": "Edit action hidden/disabled"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Products: Deactivate (`DELETE /api/products/:id`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 100,
+            "sku": "RM-P-ADM-1790746049762",
+            "name": "Mgr Prod Updated",
+            "description": null,
+            "category": "Tools",
+            "unitPrice": 20,
+            "costPrice": 10,
+            "reorderLevel": 5,
+            "supplierId": 1,
+            "supplierName": "Apex Industrial Tools",
+            "isActive": false,
+            "totalStock": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29",
+            "remainingStock": 0,
+            "notice": "Product deactivated successfully"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 101,
+            "sku": "RM-P-MGR-1790746049783",
+            "name": "Mgr Prod",
+            "description": null,
+            "category": "Tools",
+            "unitPrice": 20,
+            "costPrice": 10,
+            "reorderLevel": 5,
+            "supplierId": 1,
+            "supplierName": "Apex Industrial Tools",
+            "isActive": false,
+            "totalStock": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29",
+            "remainingStock": 0,
+            "notice": "Product deactivated successfully"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Deactivate row action visible",
+        "manager": "Deactivate row action visible",
+        "staff": "Deactivate action hidden/disabled"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Warehouses: Create (`POST /api/warehouses`)",
+      "adminApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 52,
+            "name": "Admin WH",
+            "code": "RM-W-1790746049882",
+            "address": null,
+            "city": "Metropolis",
+            "isActive": true,
+            "totalStock": 0,
+            "productCount": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Add Warehouse button visible & active",
+        "manager": "Add Warehouse button hidden",
+        "staff": "Add Warehouse button hidden"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Warehouses: Edit (`PUT /api/warehouses/:id`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 52,
+            "name": "Admin WH Updated",
+            "code": "RM-W-1790746049882",
+            "address": null,
+            "city": "Metropolis",
+            "isActive": true,
+            "totalStock": 0,
+            "productCount": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Edit row action visible & active",
+        "manager": "Edit row action hidden",
+        "staff": "Edit row action hidden"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Warehouses: Deactivate (`DELETE /api/warehouses/:id`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 52,
+            "isActive": false,
+            "message": "Warehouse successfully deactivated"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Deactivate row action visible",
+        "manager": "Deactivate row action hidden",
+        "staff": "Deactivate row action hidden"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Suppliers: Create (`POST /api/suppliers`)",
+      "adminApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 67,
+            "name": "Admin Supplier",
+            "contactName": null,
+            "email": "sup_adm_1790746049971@example.com",
+            "phone": "555-0101",
+            "address": null,
+            "isActive": true,
+            "productCount": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 68,
+            "name": "Mgr Supplier",
+            "contactName": null,
+            "email": "sup_mgr_1790746049985@example.com",
+            "phone": "555-0102",
+            "address": null,
+            "isActive": true,
+            "productCount": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:29"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Add Supplier button visible & active",
+        "manager": "Add Supplier button visible & active",
+        "staff": "Add Supplier button hidden"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Suppliers: Edit (`PUT /api/suppliers/:id`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 67,
+            "name": "Admin Supplier Updated",
+            "contactName": null,
+            "email": "sup_adm_1790746049971@example.com",
+            "phone": "555-0101",
+            "address": null,
+            "isActive": true,
+            "productCount": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:30"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 67,
+            "name": "Mgr Supplier Updated",
+            "contactName": null,
+            "email": "sup_adm_1790746049971@example.com",
+            "phone": "555-0101",
+            "address": null,
+            "isActive": true,
+            "productCount": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:30"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Edit row action visible",
+        "manager": "Edit row action visible",
+        "staff": "Edit row action hidden"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Suppliers: Deactivate (`DELETE /api/suppliers/:id`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 67,
+            "name": "Mgr Supplier Updated",
+            "contactName": null,
+            "email": "sup_adm_1790746049971@example.com",
+            "phone": "555-0101",
+            "address": null,
+            "isActive": false,
+            "productCount": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:30"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 68,
+            "name": "Mgr Supplier",
+            "contactName": null,
+            "email": "sup_mgr_1790746049985@example.com",
+            "phone": "555-0102",
+            "address": null,
+            "isActive": false,
+            "productCount": 0,
+            "createdAt": "2026-09-30 10:57:29",
+            "updatedAt": "2026-09-30 10:57:30"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Deactivate row action visible",
+        "manager": "Deactivate row action visible",
+        "staff": "Deactivate row action hidden"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Inventory: Adjust Stock (`POST /api/inventory/adjust`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "movementId": 115,
+            "productId": 1,
+            "warehouseId": 1,
+            "previousQuantity": 86,
+            "countedQuantity": 86,
+            "delta": 0,
+            "reason": "Admin audit adjust"
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "movementId": 114,
+            "productId": 1,
+            "warehouseId": 1,
+            "previousQuantity": 85,
+            "countedQuantity": 86,
+            "delta": 1,
+            "reason": "Mgr audit adjust"
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Adjust button visible & active",
+        "manager": "Adjust button visible & active",
+        "staff": "Adjust button hidden/disabled"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Inventory: Transfer Stock (`POST /api/inventory/transfer`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "productId": 1,
+            "sourceWarehouseId": 2,
+            "destinationWarehouseId": 1,
+            "quantity": 1,
+            "transferReference": "TRF-1790746050157-QN2RY",
+            "sourceRemainingStock": 51,
+            "destinationNewStock": 86,
+            "sourceMovementId": 118,
+            "destinationMovementId": 119,
+            "notes": null
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "productId": 1,
+            "sourceWarehouseId": 1,
+            "destinationWarehouseId": 2,
+            "quantity": 1,
+            "transferReference": "TRF-1790746050140-UYGHX",
+            "sourceRemainingStock": 85,
+            "destinationNewStock": 52,
+            "sourceMovementId": 116,
+            "destinationMovementId": 117,
+            "notes": null
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Transfer button visible & active",
+        "manager": "Transfer button visible & active",
+        "staff": "Transfer button hidden/disabled"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Purchase Orders: List (`GET /api/purchase-orders`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": 18,
+              "poNumber": "PO-20260930-3391",
+              "supplierId": 1,
+              "supplierName": "Apex Industrial Tools",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "status": "cancelled",
+              "orderedAt": null,
+              "receivedAt": null,
+              "receivedBy": null,
+              "receivedByName": null,
+              "totalAmount": 159,
+              "notes": null,
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "itemCount": 1,
+              "createdAt": "2026-09-30 10:56:18",
+              "updatedAt": "2026-09-30 10:56:18"
+            }
+          ],
+          "meta": {
+            "page": 1,
+            "limit": 1,
+            "total": 18,
+            "totalPages": 18
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": 18,
+              "poNumber": "PO-20260930-3391",
+              "supplierId": 1,
+              "supplierName": "Apex Industrial Tools",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "status": "cancelled",
+              "orderedAt": null,
+              "receivedAt": null,
+              "receivedBy": null,
+              "receivedByName": null,
+              "totalAmount": 159,
+              "notes": null,
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "itemCount": 1,
+              "createdAt": "2026-09-30 10:56:18",
+              "updatedAt": "2026-09-30 10:56:18"
+            }
+          ],
+          "meta": {
+            "page": 1,
+            "limit": 1,
+            "total": 18,
+            "totalPages": 18
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Visible in Nav & table rendered",
+        "manager": "Visible in Nav & table rendered",
+        "staff": "Nav hidden, URL redirects to /access-denied"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Purchase Orders: Create (`POST /api/purchase-orders`)",
+      "adminApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 20,
+            "poNumber": "PO-20260930-9312",
+            "supplierId": 1,
+            "supplierName": "Apex Industrial Tools",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "draft",
+            "orderedAt": null,
+            "receivedAt": null,
+            "receivedBy": null,
+            "receivedByName": null,
+            "totalAmount": 159,
+            "notes": null,
+            "createdBy": 1,
+            "createdByName": "System Administrator",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 27,
+                "purchaseOrderId": 20,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 2,
+                "unitCost": 79.5,
+                "subtotal": 159,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 19,
+            "poNumber": "PO-20260930-4365",
+            "supplierId": 1,
+            "supplierName": "Apex Industrial Tools",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "draft",
+            "orderedAt": null,
+            "receivedAt": null,
+            "receivedBy": null,
+            "receivedByName": null,
+            "totalAmount": 159,
+            "notes": null,
+            "createdBy": 2,
+            "createdByName": "Warehouse Manager",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 26,
+                "purchaseOrderId": 19,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 2,
+                "unitCost": 79.5,
+                "subtotal": 159,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Create PO dialog visible",
+        "manager": "Create PO dialog visible",
+        "staff": "Module hidden entirely"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Sales Orders: Create (`POST /api/sales-orders`)",
+      "adminApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 25,
+            "soNumber": "SO-20260930-6368",
+            "customerName": "Admin Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "draft",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 1,
+            "createdByName": "System Administrator",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 27,
+                "salesOrderId": 25,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 24,
+            "soNumber": "SO-20260930-3851",
+            "customerName": "Mgr Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "draft",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 2,
+            "createdByName": "Warehouse Manager",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 26,
+                "salesOrderId": 24,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 201,
+        "actual": 201,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 23,
+            "soNumber": "SO-20260930-2750",
+            "customerName": "Staff Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "draft",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 3,
+            "createdByName": "Inventory Staff",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 25,
+                "salesOrderId": 23,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "ui": {
+        "admin": "Create SO button visible",
+        "manager": "Create SO button visible",
+        "staff": "Create SO button visible (Staff allowed!)"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Sales Orders: View / List (`GET /api/sales-orders`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": 25,
+              "soNumber": "SO-20260930-6368",
+              "customerName": "Admin Created SO",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "status": "draft",
+              "totalAmount": 129.99,
+              "notes": null,
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "itemCount": 1,
+              "createdAt": "2026-09-30 10:57:30",
+              "updatedAt": "2026-09-30 10:57:30"
+            }
+          ],
+          "meta": {
+            "page": 1,
+            "limit": 1,
+            "total": 25,
+            "totalPages": 25
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": 25,
+              "soNumber": "SO-20260930-6368",
+              "customerName": "Admin Created SO",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "status": "draft",
+              "totalAmount": 129.99,
+              "notes": null,
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "itemCount": 1,
+              "createdAt": "2026-09-30 10:57:30",
+              "updatedAt": "2026-09-30 10:57:30"
+            }
+          ],
+          "meta": {
+            "page": 1,
+            "limit": 1,
+            "total": 25,
+            "totalPages": 25
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": [
+            {
+              "id": 25,
+              "soNumber": "SO-20260930-6368",
+              "customerName": "Admin Created SO",
+              "warehouseId": 1,
+              "warehouseName": "Central Logistics Hub",
+              "status": "draft",
+              "totalAmount": 129.99,
+              "notes": null,
+              "createdBy": 1,
+              "createdByName": "System Administrator",
+              "itemCount": 1,
+              "createdAt": "2026-09-30 10:57:30",
+              "updatedAt": "2026-09-30 10:57:30"
+            }
+          ],
+          "meta": {
+            "page": 1,
+            "limit": 1,
+            "total": 25,
+            "totalPages": 25
+          }
+        }
+      },
+      "ui": {
+        "admin": "Visible in Nav & table rendered",
+        "manager": "Visible in Nav & table rendered",
+        "staff": "Visible in Nav & table rendered (Staff allowed!)"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Sales Orders: Confirm (`POST /api/sales-orders/:id/confirm`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 25,
+            "soNumber": "SO-20260930-6368",
+            "customerName": "Admin Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "confirmed",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 1,
+            "createdByName": "System Administrator",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 27,
+                "salesOrderId": 25,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 24,
+            "soNumber": "SO-20260930-3851",
+            "customerName": "Mgr Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "confirmed",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 2,
+            "createdByName": "Warehouse Manager",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 26,
+                "salesOrderId": 24,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 23,
+            "soNumber": "SO-20260930-2750",
+            "customerName": "Staff Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "confirmed",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 3,
+            "createdByName": "Inventory Staff",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 25,
+                "salesOrderId": 23,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "ui": {
+        "admin": "Confirm button visible & active",
+        "manager": "Confirm button visible & active",
+        "staff": "Confirm button visible & active (Staff allowed!)"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Sales Orders: Fulfil (`POST /api/sales-orders/:id/fulfill`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 25,
+            "soNumber": "SO-20260930-6368",
+            "customerName": "Admin Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "fulfilled",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 1,
+            "createdByName": "System Administrator",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 27,
+                "salesOrderId": 25,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 24,
+            "soNumber": "SO-20260930-3851",
+            "customerName": "Mgr Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "fulfilled",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 2,
+            "createdByName": "Warehouse Manager",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 26,
+                "salesOrderId": 24,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 23,
+            "soNumber": "SO-20260930-2750",
+            "customerName": "Staff Created SO",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "fulfilled",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 3,
+            "createdByName": "Inventory Staff",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 25,
+                "salesOrderId": 23,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "ui": {
+        "admin": "Fulfil button visible & active",
+        "manager": "Fulfil button visible & active",
+        "staff": "Fulfil button visible & active (Staff allowed!)"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Sales Orders: Cancel (`POST /:id/cancel` & `PATCH /:id/status`)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 27,
+            "soNumber": "SO-20260930-5007",
+            "customerName": "SO To Cancel 2",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "cancelled",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 1,
+            "createdByName": "System Administrator",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 29,
+                "salesOrderId": 27,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "id": 26,
+            "soNumber": "SO-20260930-7446",
+            "customerName": "SO To Cancel 1",
+            "warehouseId": 1,
+            "warehouseName": "Central Logistics Hub",
+            "status": "cancelled",
+            "totalAmount": 129.99,
+            "notes": null,
+            "createdBy": 1,
+            "createdByName": "System Administrator",
+            "createdAt": "2026-09-30 10:57:30",
+            "updatedAt": "2026-09-30 10:57:30",
+            "items": [
+              {
+                "id": 28,
+                "salesOrderId": 26,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "quantity": 1,
+                "unitPrice": 129.99,
+                "subtotal": 129.99,
+                "createdAt": "2026-09-30 10:57:30",
+                "updatedAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 403,
+        "actual": 403,
+        "pass": true,
+        "response": {
+          "success": false,
+          "error": {
+            "code": "FORBIDDEN",
+            "message": "Access denied: required role admin or manager"
+          }
+        }
+      },
+      "ui": {
+        "admin": "Cancel button visible in actions",
+        "manager": "Cancel button visible in actions",
+        "staff": "Cancel button strictly hidden/disabled in UI"
+      },
+      "pass": true,
+      "notes": ""
+    },
+    {
+      "action": "Dashboard: Summary & Financial Masking (BR-05)",
+      "adminApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "totalActiveProducts": 28,
+            "totalStockUnits": 1970,
+            "stockValue": 53247.5,
+            "lowStockCount": 4,
+            "openPurchaseOrders": 0,
+            "openSalesOrders": 0,
+            "stockByWarehouse": [
+              {
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "warehouseCode": "WH-CENTRAL",
+                "totalUnits": 1331
+              },
+              {
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "warehouseCode": "WH-EAST",
+                "totalUnits": 349
+              },
+              {
+                "warehouseId": 3,
+                "warehouseName": "West Coast Fulfillment Center",
+                "warehouseCode": "WH-WEST",
+                "totalUnits": 290
+              }
+            ],
+            "recentMovements": [
+              {
+                "id": 123,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-2750",
+                "createdBy": 3,
+                "createdByName": "Inventory Staff",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 122,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-3851",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 121,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-6368",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 120,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "in",
+                "quantity": 2,
+                "reference": "PO Receipt: PO-20260930-4365",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 119,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "in",
+                "quantity": 1,
+                "reference": "TRF-1790746050157-QN2RY (Transfer from WH 2)",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 118,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "TRF-1790746050157-QN2RY (Transfer to WH 1)",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 117,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "movementType": "in",
+                "quantity": 1,
+                "reference": "TRF-1790746050140-UYGHX (Transfer from WH 1)",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 116,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "TRF-1790746050140-UYGHX (Transfer to WH 2)",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 115,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "adjustment",
+                "quantity": 0,
+                "reference": "Admin audit adjust",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 114,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "adjustment",
+                "quantity": 1,
+                "reference": "Mgr audit adjust",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "managerApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "totalActiveProducts": 28,
+            "totalStockUnits": 1970,
+            "stockValue": 53247.5,
+            "lowStockCount": 4,
+            "openPurchaseOrders": 0,
+            "openSalesOrders": 0,
+            "stockByWarehouse": [
+              {
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "warehouseCode": "WH-CENTRAL",
+                "totalUnits": 1331
+              },
+              {
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "warehouseCode": "WH-EAST",
+                "totalUnits": 349
+              },
+              {
+                "warehouseId": 3,
+                "warehouseName": "West Coast Fulfillment Center",
+                "warehouseCode": "WH-WEST",
+                "totalUnits": 290
+              }
+            ],
+            "recentMovements": [
+              {
+                "id": 123,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-2750",
+                "createdBy": 3,
+                "createdByName": "Inventory Staff",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 122,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-3851",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 121,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-6368",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 120,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "in",
+                "quantity": 2,
+                "reference": "PO Receipt: PO-20260930-4365",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 119,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "in",
+                "quantity": 1,
+                "reference": "TRF-1790746050157-QN2RY (Transfer from WH 2)",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 118,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "TRF-1790746050157-QN2RY (Transfer to WH 1)",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 117,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "movementType": "in",
+                "quantity": 1,
+                "reference": "TRF-1790746050140-UYGHX (Transfer from WH 1)",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 116,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "TRF-1790746050140-UYGHX (Transfer to WH 2)",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 115,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "adjustment",
+                "quantity": 0,
+                "reference": "Admin audit adjust",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 114,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "adjustment",
+                "quantity": 1,
+                "reference": "Mgr audit adjust",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "staffApi": {
+        "expected": 200,
+        "actual": 200,
+        "pass": true,
+        "response": {
+          "success": true,
+          "data": {
+            "totalActiveProducts": 28,
+            "totalStockUnits": 1970,
+            "lowStockCount": 4,
+            "openPurchaseOrders": 0,
+            "openSalesOrders": 0,
+            "stockByWarehouse": [
+              {
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "warehouseCode": "WH-CENTRAL",
+                "totalUnits": 1331
+              },
+              {
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "warehouseCode": "WH-EAST",
+                "totalUnits": 349
+              },
+              {
+                "warehouseId": 3,
+                "warehouseName": "West Coast Fulfillment Center",
+                "warehouseCode": "WH-WEST",
+                "totalUnits": 290
+              }
+            ],
+            "recentMovements": [
+              {
+                "id": 123,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-2750",
+                "createdBy": 3,
+                "createdByName": "Inventory Staff",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 122,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-3851",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 121,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "SO Fulfilment: SO-20260930-6368",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 120,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "in",
+                "quantity": 2,
+                "reference": "PO Receipt: PO-20260930-4365",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 119,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "in",
+                "quantity": 1,
+                "reference": "TRF-1790746050157-QN2RY (Transfer from WH 2)",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 118,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "TRF-1790746050157-QN2RY (Transfer to WH 1)",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 117,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 2,
+                "warehouseName": "East Coast Distribution Center",
+                "movementType": "in",
+                "quantity": 1,
+                "reference": "TRF-1790746050140-UYGHX (Transfer from WH 1)",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 116,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "out",
+                "quantity": 1,
+                "reference": "TRF-1790746050140-UYGHX (Transfer to WH 2)",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 115,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "adjustment",
+                "quantity": 0,
+                "reference": "Admin audit adjust",
+                "createdBy": 1,
+                "createdByName": "System Administrator",
+                "createdAt": "2026-09-30 10:57:30"
+              },
+              {
+                "id": 114,
+                "productId": 1,
+                "productName": "Cordless Brushless Drill 18V",
+                "productSku": "TOOL-DRL-001",
+                "warehouseId": 1,
+                "warehouseName": "Central Logistics Hub",
+                "movementType": "adjustment",
+                "quantity": 1,
+                "reference": "Mgr audit adjust",
+                "createdBy": 2,
+                "createdByName": "Warehouse Manager",
+                "createdAt": "2026-09-30 10:57:30"
+              }
+            ]
+          }
+        }
+      },
+      "ui": {
+        "admin": "Full summary including Stock Value card",
+        "manager": "Full summary including Stock Value card",
+        "staff": "Stock Value card hidden; stockValue key omitted from API"
+      },
+      "pass": true,
+      "notes": "stockValue presence: Admin=true, Manager=true, Staff=false (omitted)"
+    }
+  ]
+}
