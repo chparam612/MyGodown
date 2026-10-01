@@ -73,6 +73,7 @@ async function seedUsers() {
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'inventory_db',
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
   };
 
   console.log(`[seed:users] Connecting to database '${dbConfig.database}' on ${dbConfig.host}:${dbConfig.port}...`);
