@@ -12,7 +12,8 @@
     "dev": "nodemon src/server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "seed:users": "node scripts/seedUsers.js",
-    "seed:canonical": "node scripts/seed_canonical_enterprise.js"
+    "seed:canonical": "node scripts/seed_canonical_enterprise.js",
+    "db:setup": "node scripts/setupCloudDb.js"
   },
   "keywords": [],
   "author": "",

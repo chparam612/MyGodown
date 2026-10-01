@@ -23,13 +23,23 @@ const targetDatabase = isTest
   ? (process.env.DB_TEST_NAME || 'inventory_test_db')
   : (process.env.DB_NAME || 'inventory_db');
 
+const isLocalhost =
+  !process.env.DB_HOST ||
+  process.env.DB_HOST === 'localhost' ||
+  process.env.DB_HOST === '127.0.0.1' ||
+  process.env.DB_HOST === 'mysql';
+
+const useSsl =
+  process.env.DB_SSL === 'true' ||
+  (!isLocalhost && process.env.DB_SSL !== 'false');
+
 export const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '3306', 10),
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: targetDatabase,
-  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+  ssl: useSsl ? { rejectUnauthorized: false } : undefined,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,

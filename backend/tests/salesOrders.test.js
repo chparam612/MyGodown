@@ -552,7 +552,7 @@ describe('Module 7: Sales Orders (UC-28 to UC-30)', () => {
 
       // 5. Verify immutable stock movement ledger entry
       const [movementRows] = await execute(
-        'SELECT * FROM stock_movements WHERE reference_type = "sales_order" AND reference_id = ? ORDER BY id DESC LIMIT 1;',
+        "SELECT * FROM stock_movements WHERE reference_type = 'sales_order' AND reference_id = ? ORDER BY id DESC LIMIT 1;",
         [soId]
       );
       expect(movementRows).toHaveLength(1);
@@ -609,7 +609,7 @@ describe('Module 7: Sales Orders (UC-28 to UC-30)', () => {
 
       // Verify ZERO movements were recorded
       const [movementRows] = await execute(
-        'SELECT * FROM stock_movements WHERE reference_type = "sales_order" AND reference_id = ?;',
+        "SELECT * FROM stock_movements WHERE reference_type = 'sales_order' AND reference_id = ?;",
         [soId]
       );
       expect(movementRows).toHaveLength(0);

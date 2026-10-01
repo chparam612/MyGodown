@@ -28,7 +28,7 @@ WHERE table_schema = 'inventory_db'
 
 SET @stmt = IF(@col_exists = 0,
   'ALTER TABLE stock_movements ADD COLUMN reference_type VARCHAR(50) DEFAULT NULL AFTER movement_type;',
-  'SELECT "Column reference_type already exists on stock_movements";'
+  'DO 0;'
 );
 PREPARE alter_stmt FROM @stmt;
 EXECUTE alter_stmt;
@@ -43,7 +43,7 @@ WHERE table_schema = 'inventory_db'
 
 SET @stmt = IF(@col_exists = 0,
   'ALTER TABLE stock_movements ADD COLUMN reference_id INT DEFAULT NULL AFTER reference_type;',
-  'SELECT "Column reference_id already exists on stock_movements";'
+  'DO 0;'
 );
 PREPARE alter_stmt FROM @stmt;
 EXECUTE alter_stmt;
